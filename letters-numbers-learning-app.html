@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="UTF-8"?>   
+ <script>
+        // Global variables
+        let userPhotos = [];
+        let currentItem = null;
+        let currentItemType = null;
+        
+        // Hebrew letters data
+        const hebrewLetters = [
+            { letter: 'א', name: 'אלף', examples: 'אריה, אבא, אמא' },
+            { letter: 'ב', name: 'בית', examples: 'בית, בננה, בלון' },
+            { letter: 'ג', name: 'גימל', examples: 'גמל, גן, גלידה' },
+            { letter: 'ד', name: 'דלת', examples: 'דג, דלת, דבש' },
+            { letter: 'ה', name: 'הא', examples: 'הר, הדס, היפופוטם' },
+            { letter: 'ו', name: 'וו', examples: 'ורד, וילון, ולנטיין' },
+            { letter: 'ז', name: 'זין', examples: 'זברה, זית, זהב' },
+            { letter: 'ח', name: 'חית', examples: 'חתול, חלון, חלב' },
+            { letter: 'ט', name: 'טית', examples: 'טלפון, טיגריס, טבע' },
+            { letter: 'י', name: 'יוד', examples: 'ים, ילד, יד' },
+            { letter: 'כ', name: 'כף', examples: 'כלב, כדור, כיסא' },
+            { letter: 'ל', name: 'למד', examples: 'לב, לימון, לחם' },
+            { letter: 'מ', name: 'מם', examples: 'מים, מלך, מטוס' },
+            { letter: 'נ', name: 'נון', examples: 'נמר, נחש, נעל' },
+            { letter: 'ס', name: 'סמך', examples: 'סוס, ספר, סירה' },
+            { letter: 'ע', name: 'עין', examples: 'עיט, עכבר, עוגה' },
+            { letter: 'פ', name: 'פה', examples: 'פיל, פרח, פרה' },
+            { letter: 'צ', name: 'צדי', examples: 'ציפור, צב, צמר' },
+            { letter: 'ק', name: 'קוף', examples: 'קוף, קיפוד, קשת' },
+            { letter: 'ר', name: 'ריש', examples: 'רכבת, ראש, רגל' },
+            { letter: 'ש', name: 'שין', examples: 'שמש, שולחן, שעון' },
+            { letter: 'ת', name: 'תו', examples: 'תינוק, תות, תפוח' }
+        ];
+        
+        // Numbers data
+        const numberData = [
+            { number: 1, name: 'אחד' },
+            { number: 2, name: 'שניים' },
+            { number: 3, name: 'שלושה' },
+            { number: 4, name: 'ארבעה' },
+            { number: 5, name: 'חמישה' },
+            { number: 6, name: 'שישה' },
+            { number: 7, name: 'שבעה' },
+            { number: 8, name: 'שמונה' },
+            { number: 9, name: 'תשעה' },
+            { number: 10, name: 'עשרה' }
+        ];
+        
+        let currentLetterIndex = 0;
+        let currentNumberIndex = 0;
+        
+        // Initialize app
+        window.onload = function() {
+            // Load photos
+            try {
+                const savedPhotos = localStorage.getItem('userPhotos');
+                if (savedPhotos) {
+                    userPhotos = JSON.parse(savedPhotos);
+                    renderPhotos();
+                }
+            } catch (error) {
+                console.error('Error loading photos:', error);
+            }
+            
+            // Setup letters grid
+            setupLettersGrid();
+            
+            // Setup numbers grid
+            setupNumbersGrid();
+        };
+        
+        // Navigation functions
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Show requested screen
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        // Photo handling
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            
+            if (files && files.length > 0) {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    
+                    if (file.type.match('image.*')) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            const photoId = Date.now() + i;
+                            userPhotos.push({
+                                id: photoId,
+                                src: e.target.result,
+                                name: file.name
+                            });
+                            
+                            // Save to localStorage
+                            try {
+                                localStorage.setItem('userPhotos', JSON.stringify(userPhotos));
+                                renderPhotos();
+                            } catch (error) {
+                                console.error('Error saving to localStorage:', error);
+                                alert('שגיאה בשמירת התמונות');
+                            }
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    }
+                }
+            }
+        }
+        
+        function renderPhotos() {
+            const photosGrid = document.getElementById('photos-grid');
+            if (!photosGrid) return;
+            
+            photosGrid.innerHTML = '';
+            
+            if (userPhotos.length === 0) {
+                photosGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">אין תמונות עדיין</p>';
+                return;
+            }
+            
+            userPhotos.forEach(photo => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                
+                const img = document.createElement('img');
+                img.src = photo.src;
+                img.alt = photo.name || 'תמונה';
+                
+                const removeButton = document.createElement('button');
+                removeButton.className = 'remove-photo';
+                removeButton.innerHTML = '×';
+                removeButton.onclick = function() {
+                    removePhoto(photo.id);
+                };
+                
+                photoItem.appendChild(img);
+                photoItem.appendChild(removeButton);
+                photosGrid.appendChild(photoItem);
+            });
+        }
+        
+        function removePhoto(photoId) {
+            userPhotos = userPhotos.filter(photo => photo.id !== photoId);
+            
+            // Save to localStorage
+            try {
+                localStorage.setItem('userPhotos', JSON.stringify(userPhotos));
+                renderPhotos();
+            } catch (error) {
+                console.error('Error saving after removal:', error);
+                alert('שגיאה בהסרת התמונה');
+            }
+        }
+        
+        // Letters functions
+        function setupLettersGrid() {
+            const lettersGrid = document.getElementById('letters-grid');
+            if (!lettersGrid) return;
+            
+            lettersGrid.innerHTML = '';
+            
+            // Load letter images
+            let letterImages = {};
+            try {
+                const savedImages = localStorage.getItem('letterImages');
+                if (savedImages) {
+                    letterImages = JSON.parse(savedImages);
+                }
+            } catch (error) {
+                console.error('Error loading letter images:', error);
+            }
+            
+            // Create a tile for each letter
+            hebrewLetters.forEach(letterData => {
+                const tile = document.createElement('div');
+                tile.className = 'item-tile';
+                
+                // Letter label
+                const label = document.createElement('div');
+                label.className = 'item-label';
+                label.textContent = letterData.letter;
+                tile.appendChild(label);
+                
+                // Image preview
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'image-preview';
+                
+                const img = document.createElement('img');
+                
+                // Check if we have a saved image for this letter
+                if (letterImages[letterData.letter]) {
+                    img.src = letterImages[letterData.letter];
+                } else {
+                    img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0xMiAwYzYuNjIzIDAgMTIgNS4zNzcgMTIgMTJzLTUuMzc3IDEyLTEyIDEyLTEyLTUuMzc3LTEyLTEyIDUuMzc3LTEyIDEyLTEyek0xMi45IDE5aC0xLjh2LTJoMS44djJ6bTAtNGgtMS44di03LjVoMS44djcuNXoiLz48L3N2Zz4=';
+                    img.style.padding = '15px';
+                    img.style.boxSizing = 'border-box';
+                    img.style.background = '#f0f0f0';
+                }
+                
+                imgContainer.appendChild(img);
+                tile.appendChild(imgContainer);
+                
+                // Set button
+                const setButton = document.createElement('button');
+                setButton.className = 'upload-button';
+                setButton.style.margin = '10px auto 0';
+                setButton.style.padding = '5px 10px';
+                setButton.style.fontSize = '14px';
+                setButton.textContent = 'בחר תמונה';
+                setButton.onclick = function() {
+                    openPhotoModal(letterData.letter, 'letter');
+                };
+                
+                tile.appendChild(setButton);
+                lettersGrid.appendChild(tile);
+            });
+        }
+        
+        function startLettersLearning() {
+            document.getElementById('letters-grid').parentNode.style.display = 'none';
+            document.getElementById('letters-learning').style.display = 'block';
+            updateLetterDisplay();
+        }
+        
+        function backToLettersSettings() {
+            document.getElementById('letters-grid').parentNode.style.display = 'block';
+            document.getElementById('letters-learning').style.display = 'none';
+        }
+        
+        function navigateLetters(direction) {
+            currentLetterIndex = (currentLetterIndex + direction + hebrewLetters.length) % hebrewLetters.length;
+            updateLetterDisplay();
+        }
+        
+        function updateLetterDisplay() {
+            const letterData = hebrewLetters[currentLetterIndex];
+            document.getElementById('letter-display').textContent = letterData.letter;
+            document.getElementById('letter-name').textContent = letterData.name;
+            document.getElementById('letter-examples').textContent = letterData.examples;
+            
+            // Update image
+            let letterImages = {};
+            try {
+                const savedImages = localStorage.getItem('letterImages');
+                if (savedImages) {
+                    letterImages = JSON.parse(savedImages);
+                }
+            } catch (error) {
+                console.error('Error loading letter images:', error);
+            }
+            
+            const img = document.getElementById('letter-image');
+            if (letterImages[letterData.letter]) {
+                img.src = letterImages[letterData.letter];
+                img.style.padding = '0';
+                img.style.background = 'none';
+            } else {
+                img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0xMiAwYzYuNjIzIDAgMTIgNS4zNzcgMTIgMTJzLTUuMzc3IDEyLTEyIDEyLTEyLTUuMzc3LTEyLTEyIDUuMzc3LTEyIDEyLTEyek0xMi45IDE5aC0xLjh2LTJoMS44djJ6bTAtNGgtMS44di03LjVoMS44djcuNXoiLz48L3N2Zz4=';
+                img.style.padding = '50px';
+                img.style.boxSizing = 'border-box';
+                img.style.background = '#f0f0f0';
+            }
+        }
+        
+        // Numbers functions
+        function setupNumbersGrid() {
+            const numbersGrid = document.getElementById('numbers-grid');
+            if (!numbersGrid) return;
+            
+            numbersGrid.innerHTML = '';
+            
+            // Load number images
+            let numberImages = {};
+            try {
+                const savedImages = localStorage.getItem('numberImages');
+                if (savedImages) {
+                    numberImages = JSON.parse(savedImages);
+                }
+            } catch (error) {
+                console.error('Error loading number images:', error);
+            }
+            
+            // Create a tile for each number
+            numberData.forEach(numData => {
+                const tile = document.createElement('div');
+                tile.className = 'item-tile';
+                
+                // Number label
+                const label = document.createElement('div');
+                label.className = 'item-label';
+                label.textContent = numData.number;
+                tile.appendChild(label);
+                
+                // Image preview
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'image-preview';
+                
+                const img = document.createElement('img');
+                
+                // Check if we have a saved image for this number
+                if (numberImages[numData.number]) {
+                    img.src = numberImages[numData.number];
+                } else {
+                    img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0xMiAwYzYuNjIzIDAgMTIgNS4zNzcgMTIgMTJzLTUuMzc3IDEyLTEyIDEyLTEyLTUuMzc3LTEyLTEyIDUuMzc3LTEyIDEyLTEyek0xMi45IDE5aC0xLjh2LTJoMS44djJ6bTAtNGgtMS44di03LjVoMS44djcuNXoiLz48L3N2Zz4=';
+                    img.style.padding = '15px';
+                    img.style.boxSizing = 'border-box';
+                    img.style.background = '#f0f0f0';
+                }
+                
+                imgContainer.appendChild(img);
+                tile.appendChild(imgContainer);
+                
+                // Set button
+                const setButton = document.createElement('button');
+                setButton.className = 'upload-button';
+                setButton.style.margin = '10px auto 0';
+                setButton.style.padding = '5px 10px';
+                setButton.style.fontSize = '14px';
+                setButton.textContent = 'בחר תמונה';
+                setButton.onclick = function() {
+                    openPhotoModal(numData.number, 'number');
+                };
+                
+                tile.appendChild(setButton);
+                numbersGrid.appendChild(tile);
+            });
+        }
+        
+        function startNumbersLearning() {
+            document.getElementById('numbers-grid').parentNode.style.display = 'none';
+            document.getElementById('numbers-learning').style.display = 'block';
+            updateNumberDisplay();
+        }
+        
+        function backToNumbersSettings() {
+            document.getElementById('numbers-grid').parentNode.style.display = 'block';
+            document.getElementById('numbers-learning').style.display = 'none';
+        }
+        
+        function navigateNumbers(direction) {
+            currentNumberIndex = (currentNumberIndex + direction + numberData.length) % numberData.length;
+            updateNumberDisplay();
+        }
+        
+        function updateNumberDisplay() {
+            const numData = numberData[currentNumberIndex];
+            document.getElementById('number-display').textContent = numData.number;
+            document.getElementById('number-name').textContent = numData.name;
+            
+            // Update image
+            let numberImages = {};
+            try {
+                const savedImages = localStorage.getItem('numberImages');
+                if (savedImages) {
+                    numberImages = JSON.parse(savedImages);
+                }
+            } catch (error) {
+                console.error('Error loading number images:', error);
+            }
+            
+            const img = document.getElementById('number-image');
+            if (numberImages[numData.number]) {
+                img.src = numberImages[numData.number];
+                img.style.padding = '0';
+                img.style.background = 'none';
+            } else {
+                img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0xMiAwYzYuNjIzIDAgMTIgNS4zNzcgMTIgMTJzLTUuMzc3IDEyLTEyIDEyLTEyLTUuMzc3LTEyLTEyIDUuMzc3LTEyIDEyLTEyek0xMi45IDE5aC0xLjh2LTJoMS44djJ6bTAtNGgtMS44di03LjVoMS44djcuNXoiLz48L3N2Zz4=';
+                img.style.padding = '50px';
+                img.style.boxSizing = 'border-box';
+                img.style.background = '#f0f0f0';
+            }
+        }
+        
+        // Photo modal functions
+        function openPhotoModal(item, type) {
+            currentItem = item;
+            currentItemType = type;
+            
+            // Set modal title
+            if (type === 'letter') {
+                document.getElementById('modal-title').textContent = 'בחר תמונה לאות ' + item;
+            } else {
+                document.getElementById('modal-title').textContent = 'בחר תמונה למספר ' + item;
+            }
+            
+            // Fill photo selection
+            const photoSelection = document.getElementById('photo-selection');
+            photoSelection.innerHTML = '';
+            
+            if (userPhotos.length === 0) {
+                photoSelection.innerHTML = '<p>אין תמונות עדיין. נא להעלות תמונות דרך מסך "ניהול תמונות".</p>';
+            } else {
+                userPhotos.forEach(photo => {
+                    const img = document.createElement('img');
+                    img.src = photo.src;
+                    img.alt = photo.name || 'תמונה';
+                    img.onclick = function() {
+                        selectPhotoForItem(photo.src);
+                    };
+                    photoSelection.appendChild(img);
+                });
+            }
+            
+            // Show modal
+            document.getElementById('photo-modal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('photo-modal').style.display = 'none';
+        }
+        
+        function selectPhotoForItem(imageSrc) {
+            if (currentItemType === 'letter') {
+                saveLetterImage(currentItem, imageSrc);
+                setupLettersGrid(); // Refresh letters grid
+            } else {
+                saveNumberImage(currentItem, imageSrc);
+                setupNumbersGrid(); // Refresh numbers grid
+            }
+            
+            closeModal();
+        }
+        
+        function saveLetterImage(letter, imageSrc) {
+            try {
+                let letterImages = {};
+                const savedImages = localStorage.getItem('letterImages');
+                if (savedImages) {
+                    letterImages = JSON.parse(savedImages);
+                }
+                
+                letterImages[letter] = imageSrc;
+                localStorage.setItem('letterImages', JSON.stringify(letterImages));
+            } catch (error) {
+                console.error('Error saving letter image:', error);
+                alert('שגיאה בשמירת התמונה');
+            }
+        }
+        
+        function saveNumberImage(number, imageSrc) {
+            try {
+                let numberImages = {};
+                const savedImages = localStorage.getItem('numberImages');
+                if (savedImages) {
+                    numberImages = JSON.parse(savedImages);
+                }
+                
+                numberImages[number] = imageSrc;
+                localStorage.setItem('numberImages', JSON.stringify(numberImages));
+            } catch (error) {
+                console.error('Error saving number image:', error);
+                alert('שגיאה בשמירת התמונה');
+            }
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לימוד אותיות ומספרים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #FF9E80;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1, h2, h3 {
+            text-align: center;
+        }
+        
+        .main-menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .menu-button {
+            background-color: #FFCC80;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            text-align: center;
+            width: 200px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .menu-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        .back-button {
+            background-color: #FFCC80;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .photo-item {
+            position: relative;
+            height: 120px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .remove-photo {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .upload-button {
+            background-color: #81D4FA;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .white-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .item-tile {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .item-label {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .image-preview {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+        
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .learning-screen {
+            text-align: center;
+        }
+        
+        .item-display {
+            font-size: 100px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .item-name {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        
+        .item-image {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .examples {
+            font-size: 18px;
+            margin: 20px 0;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px auto;
+            max-width: 400px;
+        }
+        
+        .nav-button {
+            background-color: #FFCC80;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 45%;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 80%;
+        }
+        
+        .photo-selection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .photo-selection img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .photo-selection img:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>לימוד אותיות ומספרים</h1>
+    </header>
+    
+    <div class="container">
+        <!-- Main Menu Screen -->
+        <div id="main-menu-screen" class="screen active">
+            <div class="main-menu">
+                <button class="menu-button" onclick="showScreen('upload-screen')">ניהול תמונות</button>
+                <button class="menu-button" onclick="showScreen('letters-screen')">לימוד אותיות</button>
+                <button class="menu-button" onclick="showScreen('numbers-screen')">לימוד מספרים</button>
+            </div>
+        </div>
+        
+        <!-- Upload Screen -->
+        <div id="upload-screen" class="screen">
+            <button class="back-button" onclick="showScreen('main-menu-screen')">חזרה לתפריט</button>
+            <h2>ניהול תמונות</h2>
+            
+            <div class="white-card">
+                <div style="text-align: center;">
+                    <button class="upload-button" onclick="document.getElementById('file-input').click()">העלאת תמונות</button>
+                    <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="handleFileSelect(event)">
+                </div>
+                
+                <h3>התמונות שלך:</h3>
+                <div id="photos-grid" class="photos-grid">
+                    <!-- Photos will be added here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Letters Screen -->
+        <div id="letters-screen" class="screen">
+            <button class="back-button" onclick="showScreen('main-menu-screen')">חזרה לתפריט</button>
+            <h2>לימוד אותיות</h2>
+            
+            <div class="white-card">
+                <h3>הגדרת תמונות לאותיות</h3>
+                
+                <div id="letters-grid" class="settings-grid">
+                    <!-- Letter tiles will be added here -->
+                </div>
+                
+                <button class="upload-button" onclick="startLettersLearning()">התחל ללמוד אותיות</button>
+            </div>
+            
+            <div id="letters-learning" class="white-card learning-screen" style="display: none;">
+                <div class="item-display" id="letter-display">א</div>
+                <div class="item-name" id="letter-name">אלף</div>
+                
+                <div class="item-image">
+                    <img id="letter-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0xMiAwYzYuNjIzIDAgMTIgNS4zNzcgMTIgMTJzLTUuMzc3IDEyLTEyIDEyLTEyLTUuMzc3LTEyLTEyIDUuMzc3LTEyIDEyLTEyek0xMi45IDE5aC0xLjh2LTJoMS44djJ6bTAtNGgtMS44di03LjVoMS44djcuNXoiLz48L3N2Zz4=" alt="תמונה לאות">
+                </div>
+                
+                <div class="examples" id="letter-examples">אריה, אבא, אמא</div>
+                
+                <div class="navigation-buttons">
+                    <button class="nav-button" onclick="navigateLetters(-1)">האות הקודמת</button>
+                    <button class="nav-button" onclick="navigateLetters(1)">האות הבאה</button>
+                </div>
+                
+                <button class="back-button" onclick="backToLettersSettings()">חזרה להגדרות</button>
+            </div>
+        </div>
+        
+        <!-- Numbers Screen -->
+        <div id="numbers-screen" class="screen">
+            <button class="back-button" onclick="showScreen('main-menu-screen')">חזרה לתפריט</button>
+            <h2>לימוד מספרים</h2>
+            
+            <div class="white-card">
+                <h3>הגדרת תמונות למספרים</h3>
+                
+                <div id="numbers-grid" class="settings-grid">
+                    <!-- Number tiles will be added here -->
+                </div>
+                
+                <button class="upload-button" onclick="startNumbersLearning()">התחל ללמוד מספרים</button>
+            </div>
+            
+            <div id="numbers-learning" class="white-card learning-screen" style="display: none;">
+                <div class="item-display" id="number-display">1</div>
+                <div class="item-name" id="number-name">אחד</div>
+                
+                <div class="item-image">
+                    <img id="number-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0xMiAwYzYuNjIzIDAgMTIgNS4zNzcgMTIgMTJzLTUuMzc3IDEyLTEyIDEyLTEyLTUuMzc3LTEyLTEyIDUuMzc3LTEyIDEyLTEyek0xMi45IDE5aC0xLjh2LTJoMS44djJ6bTAtNGgtMS44di03LjVoMS44djcuNXoiLz48L3N2Zz4=" alt="תמונה למספר">
+                </div>
+                
+                <div class="navigation-buttons">
+                    <button class="nav-button" onclick="navigateNumbers(-1)">המספר הקודם</button>
+                    <button class="nav-button" onclick="navigateNumbers(1)">המספר הבא</button>
+                </div>
+                
+                <button class="back-button" onclick="backToNumbersSettings()">חזרה להגדרות</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Photo Selection Modal -->
+    <div id="photo-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">בחר תמונה</h3>
+            
+            <div id="photo-selection" class="photo-selection">
+                <!-- Photos will be added here -->
+            </div>
+            
+            <button class="back-button" onclick="closeModal()">סגור</button>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let userPhotos = [];
+        let currentItem = null;
+        let currentItem
