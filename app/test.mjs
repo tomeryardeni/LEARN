@@ -150,17 +150,24 @@ await test('Test Case 10: row order ignored unless ordered', () => {
 console.log('ERD lab');
 if (SL.erd) {
   for (const ex of SL.erd.exercises) {
-    await test(`"${ex.id}" reference solution scores 100`, async () => {
-      const refs = ex.references || ex.solutions || ex.refs;
-      ok(refs && refs.length, 'no reference solutions exposed');
-      const r = await SL.erd.grade(JSON.parse(JSON.stringify(refs[0])), ex);
-      eq(Math.round(r.score), 100);
+    await test(`"${ex.id}" every reference solution scores 100`, () => {
+      ex.solutions.forEach((_, i) => {
+        const m = SL.erd.solutionModel(ex.id, i);
+        eq(SL.erd.validate(m, ex.level).errors.length, 0, 'solution ' + i + ' has blocking errors');
+        eq(Math.round(SL.erd.grade(m, ex.id).score), 100, 'solution ' + i);
+      });
     });
   }
   await test('Test Case 7: logical entity without PK blocks', () => {
-    const m = { entities: [{ id: 'e1', name: 'Item', type: 'master', fields: [{ id: 'f1', name: 'ItemSKU', type: 'TEXT', length: 20, required: true, pk: false }] }], relationships: [] };
-    const v = SL.erd.validate(m, 'logical');
-    ok((v.errors || v.blocking || []).length > 0, 'expected blocking error');
+    const m = SL.erd.solutionModel('erd-po', 0);
+    const ent = m.entities.find((e) => /^Item$/i.test(e.name));
+    ent.fields.forEach((f) => (f.pk = false));
+    const errs = SL.erd.validate(m, 'logical').errors;
+    ok(errs.some((e) => e.target && e.target.id === ent.id), 'Item not flagged');
+    ok(SL.erd.validate(m, 'logical').errors.length > 0, 'expected blocking error');
+  });
+  await test('fix exercise starts with 4 planted issues', () => {
+    eq(SL.erd.plantedIssues(SL.erd.startModel('erd-so-fix'), 'erd-so-fix').length, 4);
   });
 } else console.log('  (skipped: lab-erd.js not loaded)');
 

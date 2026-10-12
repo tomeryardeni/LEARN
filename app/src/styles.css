@@ -294,3 +294,5 @@ table.tbl.ltr th, table.tbl.ltr td { text-align: left; }
 .explain.good, .explain.bad, .notice.good, .notice.bad, .notice.warn { color: var(--text); }
 .big-stars { color: var(--gold); }
 .big-stars .off { color: var(--border); }
+.lab-card, .mode-card { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; }
+.labs-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }

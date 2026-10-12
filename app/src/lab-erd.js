@@ -1101,7 +1101,7 @@
   }
 
   // ---------------------------------------------------------------- styles
-  const CSS = `
+  const ERD_CSS = `
 .erd-split { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
 .erd-split.wide { grid-template-columns: minmax(0, 1fr); }
 .erd-ed .card h2 { margin-top: 0; font-size: 1.05rem; }
@@ -1114,6 +1114,11 @@
 .erd-ed .tech { direction: ltr; text-align: left; font-family: var(--mono); }
 .erd-ed .table-wrap { max-height: none; }
 .erd-ed input[type='checkbox'] { width: 18px; height: 18px; }
+.erd-rels { display: grid; gap: 8px; }
+.erd-rel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1fr) 34px; gap: 2px 6px; align-items: center; padding: 8px; border: 1px solid var(--border); border-radius: 10px; }
+.erd-rel .c { text-align: center; }
+.erd-rel .erd-sent { grid-column: 1 / -1; font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.erd-rel.ok-row { border-color: var(--good); } .erd-rel.warn-row { border-color: var(--warn); } .erd-rel.err-row { border-color: var(--bad); }
 .erd-sentence td { font-size: 0.78rem; color: var(--muted); padding-top: 0 !important; border-bottom: 1px solid var(--border); }
 .erd-rel-main td { border-bottom: none !important; }
 .erd-x { min-height: 30px !important; padding: 2px 8px !important; color: var(--bad); }
@@ -1185,7 +1190,7 @@
     if (document.getElementById('erd-css')) return;
     const st = document.createElement('style');
     st.id = 'erd-css';
-    st.textContent = CSS;
+    st.textContent = ERD_CSS;
     document.head.appendChild(st);
   }
 
@@ -1585,7 +1590,7 @@
       });
       return c;
     }
-    const cardOptions = [{ v: '', t: '— בחרו —' }].concat(CARDS.map((c) => ({ v: c.v, t: c.he + ' (' + c.sym + ')' })));
+    const cardOptions = [{ v: '', t: '— בחרו —' }].concat(CARDS.map((c) => ({ v: c.v, t: c.he + ' (\u2066' + c.sym + '\u2069)' })));
 
     function setSelected(id) {
       if (selectedId === id) return;
@@ -1662,7 +1667,7 @@
         });
         body.push(
           e.fields.length
-            ? h('div', { class: 'table-wrap' }, h('table', { class: 'tbl' }, h('thead', null, h('tr', null, h('th', null, 'שם טכני'), h('th', { style: { width: '98px' } }, 'סוג נתון'), h('th', { style: { width: '52px' }, title: 'אורך טקסט, או ספרות אחרי הנקודה' }, 'אורך'), h('th', { style: { width: '42px' } }, 'חובה'), h('th', { style: { width: '34px' } }, 'PK'), h('th', null, 'מפנה אל'), h('th', { style: { width: '40px' } }, h('span', { class: 'hidden' }, 'מחיקה')))), h('tbody', null, rows)))
+            ? h('div', { class: 'table-wrap' }, h('table', { class: 'tbl' }, h('thead', null, h('tr', null, h('th', { style: { width: '30%' } }, 'שם טכני'), h('th', { style: { width: '98px' } }, 'סוג נתון'), h('th', { style: { width: '52px' }, title: 'אורך טקסט, או ספרות אחרי הנקודה' }, 'אורך'), h('th', { style: { width: '42px' } }, 'חובה'), h('th', { style: { width: '34px' } }, 'PK'), h('th', null, 'מפנה אל'), h('th', { style: { width: '40px' } }, h('span', { class: 'hidden' }, 'מחיקה')))), h('tbody', null, rows)))
             : h('p', { class: 'muted small' }, 'אין שדות.'),
           h('div', { class: 'row', style: { marginTop: '8px' } }, h('button', { class: 'btn small', onclick: addField, 'data-k': 'detail:addfield' }, '➕ שדה'), h('span', { class: 'small muted' }, 'אורך: תווים בטקסט, ספרות אחרי הנקודה במספר עשרוני.'))
         );
@@ -1680,19 +1685,21 @@
         const b = byId.get(r.to);
         rows.push(
           h(
-            'tr',
-            { 'data-row': 'r:' + r.id, class: 'erd-rel-main' },
-            h('td', null, selectInput('r:' + r.id + ':from', entOpts, r.from, (v) => (r.from = v), { label: 'מישות', ltr: true })),
-            h('td', null, selectInput('r:' + r.id + ':fc', cardOptions, r.fromCard, (v) => (r.fromCard = v), { label: 'קרדינליות בצד ישות המקור', title: 'כמה רשומות של ישות המקור מתאימות לרשומה אחת של ישות היעד' })),
-            h('td', null, textInput('r:' + r.id + ':name', r.name, (v) => (r.name = v), { label: 'שם הקשר', ph: 'שם' })),
-            h('td', null, selectInput('r:' + r.id + ':tc', cardOptions, r.toCard, (v) => (r.toCard = v), { label: 'קרדינליות בצד ישות היעד', title: 'כמה רשומות של ישות היעד מתאימות לרשומה אחת של ישות המקור' })),
-            h('td', null, selectInput('r:' + r.id + ':to', entOpts, r.to, (v) => (r.to = v), { label: 'לישות', ltr: true })),
-            h('td', { class: 'c' }, h('button', { class: 'btn small ghost erd-x', 'data-k': 'r:' + r.id + ':del', onclick: () => { M().rels = M().rels.filter((x) => x.id !== r.id); commit(); renderEditor(); touched(); }, 'aria-label': 'מחק קשר', title: 'מחק' }, '✕'))
-          ),
-          h(
-            'tr',
-            { 'data-row': 'r:' + r.id, class: 'erd-sentence' },
-            h('td', { colspan: '6' }, a && b ? [`לכל `, SL.code(a.name), `: ${r.toCard ? cardHe(r.toCard) : '?'} `, SL.code(b.name), ` · לכל `, SL.code(b.name), `: ${r.fromCard ? cardHe(r.fromCard) : '?'} `, SL.code(a.name)] : 'בחרו ישות בשני הצדדים')
+            'div',
+            { 'data-row': 'r:' + r.id, class: 'erd-rel' },
+            h('span', { class: 'small muted' }, 'מישות'),
+            h('span', { class: 'small muted' }, 'שם הקשר'),
+            h('span', { class: 'small muted' }, 'לישות'),
+            h('span'),
+            selectInput('r:' + r.id + ':from', entOpts, r.from, (v) => (r.from = v), { label: 'מישות', ltr: true }),
+            textInput('r:' + r.id + ':name', r.name, (v) => (r.name = v), { label: 'שם הקשר', ph: 'שם' }),
+            selectInput('r:' + r.id + ':to', entOpts, r.to, (v) => (r.to = v), { label: 'לישות', ltr: true }),
+            h('button', { class: 'btn small ghost erd-x', 'data-k': 'r:' + r.id + ':del', onclick: () => { M().rels = M().rels.filter((x) => x.id !== r.id); commit(); renderEditor(); touched(); }, 'aria-label': 'מחק קשר', title: 'מחק' }, '✕'),
+            selectInput('r:' + r.id + ':fc', cardOptions, r.fromCard, (v) => (r.fromCard = v), { label: 'קרדינליות בצד ישות המקור', title: 'כמה רשומות של ישות המקור מתאימות לרשומה אחת של ישות היעד' }),
+            h('span', { class: 'muted c', 'aria-hidden': 'true' }, '↔'),
+            selectInput('r:' + r.id + ':tc', cardOptions, r.toCard, (v) => (r.toCard = v), { label: 'קרדינליות בצד ישות היעד', title: 'כמה רשומות של ישות היעד מתאימות לרשומה אחת של ישות המקור' }),
+            h('span'),
+            h('div', { class: 'erd-sent' }, a && b ? [`לכל `, SL.code(a.name), `: ${r.toCard ? cardHe(r.toCard) : '?'} `, SL.code(b.name), ` · לכל `, SL.code(b.name), `: ${r.fromCard ? cardHe(r.fromCard) : '?'} `, SL.code(a.name)] : 'בחרו ישות בשני הצדדים')
           )
         );
       });
@@ -1702,7 +1709,7 @@
         h('div', { class: 'row between' }, h('h2', null, 'קשרים'), h('button', { class: 'btn small', onclick: addRel }, '➕ קשר')),
         h('p', { class: 'small muted', style: { marginTop: 0 } }, 'הקרדינליות שליד כל ישות אומרת כמה רשומות שלה מתאימות לרשומה אחת בצד השני.'),
         rows.length
-          ? h('div', { class: 'table-wrap' }, h('table', { class: 'tbl' }, h('thead', null, h('tr', null, h('th', null, 'מישות'), h('th', null, 'קרדינליות'), h('th', { style: { width: '90px' } }, 'שם הקשר'), h('th', null, 'קרדינליות'), h('th', null, 'לישות'), h('th', { style: { width: '40px' } }, h('span', { class: 'hidden' }, 'מחיקה')))), h('tbody', null, rows)))
+          ? h('div', { class: 'erd-rels' }, rows)
           : h('p', { class: 'muted small' }, 'אין עדיין קשרים.')
       );
     }
@@ -1744,7 +1751,7 @@
 
     function applyRowMarks() {
       const cls = { good: 'ok-row', warn: 'warn-row', bad: 'err-row' };
-      edEl.querySelectorAll('tr[data-row]').forEach((tr) => {
+      edEl.querySelectorAll('[data-row]').forEach((tr) => {
         const [kind, id] = tr.getAttribute('data-row').split(':');
         const st = (marks[kind] || {})[id];
         tr.classList.remove('ok-row', 'warn-row', 'err-row');
@@ -1780,7 +1787,7 @@
       statusEl.append(
         v.errors.length ? h('span', { class: 'tag bad' }, v.errors.length + ' שגיאות חוסמות') : h('span', { class: 'tag good' }, '✓ מבנה תקין'),
         ' ',
-        v.warnings.length ? h('span', { class: 'tag warn' }, v.warnings.length + ' אזהרות') : null
+        v.warnings.length ? h('span', { class: 'tag warn' }, v.warnings.length + ' אזהרות') : ''
       );
       return v;
     }
@@ -1884,7 +1891,8 @@
         !g.detailed ? h('p', { class: 'small muted' }, 'בניסיון הראשון והשני המשוב מצביע על האזור ושואל שאלה. מהניסיון השלישי תקבלו הסבר מלא.') : null,
         g.summary.length ? h('div', { class: 'notice warn', style: { marginTop: '8px' } }, g.summary.join(' ')) : null,
         h('h3', null, 'משוב'),
-        fbList(g.feedback),
+        g.feedback.some((f) => f.sev !== 'good') ? fbList(g.feedback.filter((f) => f.sev !== 'good')) : h('p', { class: 'muted' }, 'אין הערות לתיקון.'),
+        g.feedback.some((f) => f.sev === 'good') ? h('details', { style: { marginTop: '10px' }, open: !g.feedback.some((f) => f.sev !== 'good') ? null : null }, h('summary', null, '✓ מה נכון (' + g.feedback.filter((f) => f.sev === 'good').length + ')'), h('div', { style: { marginTop: '8px' } }, fbList(g.feedback.filter((f) => f.sev === 'good')))) : null,
         st.solutionViewed ? altSuggestion() : null
       );
       resultsEl.append(card);

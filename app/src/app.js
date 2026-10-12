@@ -152,7 +152,7 @@
         : h('div', { class: 'notice small' }, 'המעבדות עובדות עם בדיקות כללים. ', h('a', { href: '#/settings' }, 'הגדרת מפתח API'), ' מוסיפה משוב בינה מלאכותית.'),
       h(
         'div',
-        { class: 'grid two', style: { marginTop: '12px' } },
+        { class: 'labs-grid', style: { marginTop: '12px' } },
         SL.labs.map((lab) =>
           h(
             'button',
