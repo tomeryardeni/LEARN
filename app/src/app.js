@@ -149,7 +149,9 @@
       h('p', { class: 'muted' }, 'תרגול כמו בעבודה. כל הגשה מקבלת ציון ומשוב, ומעדכנת את מפת המיומנויות.'),
       SL.ai.enabled()
         ? h('div', { class: 'notice good small' }, '🤖 משוב בינה מלאכותית פעיל')
-        : h('div', { class: 'notice small' }, 'המעבדות עובדות עם בדיקות כללים. ', h('a', { href: '#/settings' }, 'הגדרת מפתח API'), ' מוסיפה משוב בינה מלאכותית.'),
+        : SL.HOSTED
+          ? h('div', { class: 'notice small' }, 'המעבדות עובדות עם בדיקות כללים.')
+          : h('div', { class: 'notice small' }, 'המעבדות עובדות עם בדיקות כללים. ', h('a', { href: '#/settings' }, 'הגדרת מפתח API'), ' מוסיפה משוב בינה מלאכותית.'),
       h(
         'div',
         { class: 'labs-grid', style: { marginTop: '12px' } },
@@ -396,7 +398,9 @@
 
     el.append(
       h('h1', null, '⚙️ הגדרות'),
-      h(
+      SL.HOSTED
+        ? h('div', { class: 'card stack' }, h('h2', { style: { marginTop: 0 } }, '🤖 משוב בינה מלאכותית'), h('p', { class: 'muted small' }, 'בגרסת הקישור המעבדות עובדות עם בדיקות כללים. משוב בינה מלאכותית זמין בקובץ speclab.html שפותחים במחשב.'))
+        : h(
         'div',
         { class: 'card stack' },
         h('h2', { style: { marginTop: 0 } }, '🤖 משוב בינה מלאכותית (אופציונלי)'),

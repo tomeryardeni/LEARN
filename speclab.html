@@ -115,7 +115,7 @@ pre { background: var(--surface-2); padding: 12px; border-radius: 10px; overflow
 
 /* ---------- layout ---------- */
 .topbar {
-  position: sticky; top: 0; z-index: 20;
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
@@ -696,7 +696,17 @@ window.__SQLJS_WASM_B64="AGFzbQEAAAABnwRFYAJ/fwF/YAF/AX9gA39/fwBgA39/fwF/YAF/AGA
     ta.remove();
     return Promise.resolve();
   };
+  // Set by the hosted build (claude.ai page): downloads and direct API calls are blocked there.
+  SL.HOSTED = !!window.__SPECLAB_HOSTED;
   SL.download = function (filename, text, type) {
+    if (SL.HOSTED) {
+      const ta = SL.h('textarea', { readonly: true, class: 'code', style: { minHeight: '200px' }, 'aria-label': filename });
+      ta.value = text;
+      return SL.modal('העתקה: ' + filename, SL.h('div', { class: 'stack' }, SL.h('p', { class: 'muted small' }, 'בגרסת הקישור אי אפשר להוריד קבצים. העתיקו את הטקסט ושמרו אותו בקובץ.'), ta), [
+        { label: 'סגור', value: false },
+        { label: 'העתקה', value: true, primary: true },
+      ]).then((v) => v && SL.copyText(text));
+    }
     const a = SL.h('a', { href: URL.createObjectURL(new Blob([text], { type: type || 'text/plain;charset=utf-8' })), download: filename });
     document.body.appendChild(a);
     a.click();
@@ -762,7 +772,7 @@ window.__SQLJS_WASM_B64="AGFzbQEAAAABnwRFYAJ/fwF/YAF/AX9gA39/fwBgA39/fwF/YAF/AGA
   // Single HTML file with no bundler, so we call the Messages API with fetch directly.
   SL.ai = {
     model: 'claude-opus-5-5',
-    enabled: () => !!(SL.state.settings.apiKey && SL.state.settings.aiEnabled),
+    enabled: () => !SL.HOSTED && !!(SL.state.settings.apiKey && SL.state.settings.aiEnabled),
     /** Returns parsed JSON matching `schema`. Throws Error with a Hebrew message on failure. */
     async call({ system, prompt, schema, maxTokens, effort }) {
       const key = SL.state.settings.apiKey;
@@ -9591,7 +9601,9 @@ window.__SQLJS_WASM_B64="AGFzbQEAAAABnwRFYAJ/fwF/YAF/AX9gA39/fwBgA39/fwF/YAF/AGA
       h('p', { class: 'muted' }, 'תרגול כמו בעבודה. כל הגשה מקבלת ציון ומשוב, ומעדכנת את מפת המיומנויות.'),
       SL.ai.enabled()
         ? h('div', { class: 'notice good small' }, '🤖 משוב בינה מלאכותית פעיל')
-        : h('div', { class: 'notice small' }, 'המעבדות עובדות עם בדיקות כללים. ', h('a', { href: '#/settings' }, 'הגדרת מפתח API'), ' מוסיפה משוב בינה מלאכותית.'),
+        : SL.HOSTED
+          ? h('div', { class: 'notice small' }, 'המעבדות עובדות עם בדיקות כללים.')
+          : h('div', { class: 'notice small' }, 'המעבדות עובדות עם בדיקות כללים. ', h('a', { href: '#/settings' }, 'הגדרת מפתח API'), ' מוסיפה משוב בינה מלאכותית.'),
       h(
         'div',
         { class: 'labs-grid', style: { marginTop: '12px' } },
@@ -9838,7 +9850,9 @@ window.__SQLJS_WASM_B64="AGFzbQEAAAABnwRFYAJ/fwF/YAF/AX9gA39/fwBgA39/fwF/YAF/AGA
 
     el.append(
       h('h1', null, '⚙️ הגדרות'),
-      h(
+      SL.HOSTED
+        ? h('div', { class: 'card stack' }, h('h2', { style: { marginTop: 0 } }, '🤖 משוב בינה מלאכותית'), h('p', { class: 'muted small' }, 'בגרסת הקישור המעבדות עובדות עם בדיקות כללים. משוב בינה מלאכותית זמין בקובץ speclab.html שפותחים במחשב.'))
+        : h(
         'div',
         { class: 'card stack' },
         h('h2', { style: { marginTop: 0 } }, '🤖 משוב בינה מלאכותית (אופציונלי)'),

@@ -367,7 +367,17 @@
     ta.remove();
     return Promise.resolve();
   };
+  // Set by the hosted build (claude.ai page): downloads and direct API calls are blocked there.
+  SL.HOSTED = !!window.__SPECLAB_HOSTED;
   SL.download = function (filename, text, type) {
+    if (SL.HOSTED) {
+      const ta = SL.h('textarea', { readonly: true, class: 'code', style: { minHeight: '200px' }, 'aria-label': filename });
+      ta.value = text;
+      return SL.modal('העתקה: ' + filename, SL.h('div', { class: 'stack' }, SL.h('p', { class: 'muted small' }, 'בגרסת הקישור אי אפשר להוריד קבצים. העתיקו את הטקסט ושמרו אותו בקובץ.'), ta), [
+        { label: 'סגור', value: false },
+        { label: 'העתקה', value: true, primary: true },
+      ]).then((v) => v && SL.copyText(text));
+    }
     const a = SL.h('a', { href: URL.createObjectURL(new Blob([text], { type: type || 'text/plain;charset=utf-8' })), download: filename });
     document.body.appendChild(a);
     a.click();
@@ -433,7 +443,7 @@
   // Single HTML file with no bundler, so we call the Messages API with fetch directly.
   SL.ai = {
     model: 'claude-opus-5-5',
-    enabled: () => !!(SL.state.settings.apiKey && SL.state.settings.aiEnabled),
+    enabled: () => !SL.HOSTED && !!(SL.state.settings.apiKey && SL.state.settings.aiEnabled),
     /** Returns parsed JSON matching `schema`. Throws Error with a Hebrew message on failure. */
     async call({ system, prompt, schema, maxTokens, effort }) {
       const key = SL.state.settings.apiKey;

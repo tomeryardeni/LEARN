@@ -106,7 +106,7 @@ pre { background: var(--surface-2); padding: 12px; border-radius: 10px; overflow
 
 /* ---------- layout ---------- */
 .topbar {
-  position: sticky; top: 0; z-index: 20;
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }

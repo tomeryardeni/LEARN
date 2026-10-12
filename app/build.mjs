@@ -40,6 +40,19 @@ const html = src('index.html')
   .replace('/*__STYLES__*/', () => src('styles.css'))
   .replace('<!--__SCRIPTS__-->', () => engine + '\n' + app);
 
+// --hosted: page for claude.ai hosting. The host adds doctype/head/body itself, and the
+// page must start with its <title>.
+const hosted = process.argv.includes('--hosted');
+const output = hosted
+  ? html
+      .replace(/^[\s\S]*?<head>/, '')
+      .replace(/<\/head>\s*<body>/, '')
+      .replace(/<\/body>\s*<\/html>\s*$/, '')
+      .replace(/<meta [^>]*>\s*/g, '')
+      .replace(/<title>[^<]*<\/title>/, '<title>SpecQuest</title>')
+      .replace(/<link rel="icon".*\n/, '')
+      .replace('<style>', '<script>window.__SPECLAB_HOSTED=true;document.documentElement.lang="he";document.documentElement.dir="rtl";</script>\n<style>')
+  : html;
 const out = process.env.OUT || join(here, '..', 'speclab.html');
-writeFileSync(out, html);
-console.log(`Built ${out} (${(html.length / 1024).toFixed(0)} KB)`);
+writeFileSync(out, output);
+console.log(`Built ${out} (${(output.length / 1024).toFixed(0)} KB)`);
