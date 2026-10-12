@@ -1,0 +1,16 @@
+{
+  "name": "speclab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SpecQuest / SpecLab - learning game and labs for technical specification writing",
+  "type": "module",
+  "scripts": {
+    "build": "node app/build.mjs",
+    "test": "node app/test.mjs",
+    "docs": "node docs/md-to-docx.cjs"
+  },
+  "devDependencies": {
+    "docx": "^9.10.0",
+    "sql.js": "1.13.0"
+  }
+}
