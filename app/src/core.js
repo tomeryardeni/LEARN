@@ -233,6 +233,7 @@
     const subId = now + Math.random();
     (categories || []).forEach((c) => st.gaps.push({ category: c, source, at: now, sub: subId }));
     st.gaps = st.gaps.filter((g) => now - g.at < 90 * DAY);
+    const added = [];
     (categories || []).forEach((c) => {
       const subs = new Set(st.gaps.filter((g) => g.category === c && now - g.at <= 30 * DAY).map((g) => g.sub));
       const exists = st.checklist.find((i) => i.category === c && i.status === 'open');
@@ -247,9 +248,11 @@
           clean: 0,
           createdAt: now,
         });
-        SL.toast('📝 נוסף פריט לצ\'קליסט: ' + (labelFn ? labelFn(c) : c));
+        added.push(labelFn ? labelFn(c) : c);
       }
     });
+    if (added.length === 1) SL.toast('📝 נוסף פריט לצ\'קליסט: ' + added[0]);
+    else if (added.length > 1) SL.toast('📝 נוספו ' + added.length + ' פריטים לצ\'קליסט האישי');
     st.checklist.forEach((i) => {
       if (i.source !== 'auto' || i.status !== 'open' || !i.category) return;
       if ((categories || []).includes(i.category)) i.clean = 0;
