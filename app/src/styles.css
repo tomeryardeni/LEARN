@@ -291,3 +291,6 @@ table.tbl.ltr th, table.tbl.ltr td { text-align: left; }
   h1 { font-size: 1.35rem; }
   .card { padding: 14px; }
 }
+.explain.good, .explain.bad, .notice.good, .notice.bad, .notice.warn { color: var(--text); }
+.big-stars { color: var(--gold); }
+.big-stars .off { color: var(--border); }

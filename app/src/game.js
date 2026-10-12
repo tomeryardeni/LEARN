@@ -60,7 +60,11 @@
 .order-list li.correct { border-color:var(--good); background:var(--good-soft); }
 .order-list li.wrong { border-color:var(--bad); background:var(--bad-soft); }
 .q-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:14px; flex-wrap:wrap; }
+.explain.good, .explain.bad { color: var(--text); }
+.explain.good h3 { color: var(--good); }
+.explain.bad h3 { color: var(--bad); }
 .explain .work { margin-top:8px; }
+.fin-hero .big-stars { margin: 4px 0; }
 .explain .answer-line { margin-top:6px; font-weight:600; }
 .fin-hero { text-align:center; }
 .fin-hero .emoji { font-size:3rem; }
@@ -115,7 +119,7 @@
   function starsEl(n, big) {
     return h(
       'span',
-      { class: big ? 'big-stars' : 'stars', role: 'img', 'aria-label': n + ' מתוך 3 כוכבים' },
+      { class: big ? 'stars big-stars' : 'stars', role: 'img', 'aria-label': n + ' מתוך 3 כוכבים' },
       '★'.repeat(n),
       h('span', { class: 'off' }, '★'.repeat(3 - n))
     );
@@ -130,6 +134,8 @@
     const pct = total ? Math.round((done / total) * 100) : 0;
     return h('div', { class: 'progress', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(total), 'aria-valuenow': String(done), 'aria-label': 'התקדמות' }, h('div', { style: { width: pct + '%' } }));
   }
+  /** "+N XP" kept left-to-right inside RTL text */
+  const xpTxt = (n, plus) => h('bdi', { dir: 'ltr' }, (plus === false ? '' : '+') + n + ' XP');
   function backLink(path, label) {
     return h('a', { href: '#' + path, class: 'btn ghost small' }, '→ ' + label);
   }
@@ -249,7 +255,7 @@
       const rec = SL.state.levels[l.id];
       const meta = boss
         ? open
-          ? '8 שאלות מכל השלבים, בלי רמזים · ניצחון = ' + BOSS_XP + ' XP'
+          ? ['8 שאלות מכל השלבים, בלי רמזים · ניצחון = ', xpTxt(BOSS_XP, false)]
           : '🔒 נפתח כשכל השלבים בעולם הושלמו'
         : open
           ? (rec && rec.attempts ? rec.attempts + ' ניסיונות' : 'עוד לא שוחק') + (b === 1 ? ' · צריך 2★ לפתיחת העולם הבא' : '')
@@ -378,8 +384,8 @@
         { class: 'q-meta' },
         h('span', { class: 'tag primary' }, cfg.title),
         h('span', { class: 'tag' }, 'שאלה ' + (s.i + 1) + ' מתוך ' + total),
-        h('span', { class: 'tag' }, '⚡ ' + s.xp + ' XP'),
-        s.combo >= 2 ? h('span', { class: 'combo pop', 'aria-label': 'רצף ' + s.combo + ' תשובות נכונות' }, '🔥 ×' + s.combo + (s.combo >= 2 ? ' · הבאה +' + COMBO_XP : '')) : null
+        h('span', { class: 'tag' }, '⚡ ', xpTxt(s.xp, false)),
+        s.combo >= 2 ? h('span', { class: 'combo pop' }, '🔥 רצף ' + s.combo + (s.combo >= 3 ? ' · בונוס פעיל' : ' · בתשובה הבאה יש בונוס')) : null
       );
       return [head, meta];
     }
@@ -456,7 +462,7 @@
       const ex = h(
         'div',
         { class: 'explain pop ' + (correct ? 'good' : 'bad'), role: 'status' },
-        h('h3', null, (correct ? '✅ ' : '❌ ') + cheer + (gained ? ' +' + gained + ' XP' : '') + (correct && s.combo >= 3 ? ' 🔥' : '')),
+        h('h3', null, (correct ? '✅ ' : '❌ ') + cheer + ' ', gained ? xpTxt(gained) : null, correct && s.combo >= 3 ? ' 🔥 בונוס רצף' : ''),
         !correct ? h('div', { class: 'answer-line' }, 'התשובה הנכונה: ', answerText(q)) : null,
         h('p', null, rich(q.explain)),
         h('p', { class: 'work' }, h('b', null, '💼 בעבודה: '), rich(q.work)),
@@ -506,7 +512,7 @@
             { class: 'card fin-hero pop' },
             h('div', { class: 'emoji', 'aria-hidden': 'true' }, '🔁'),
             h('h1', null, 'החזרה הושלמה'),
-            h('p', null, s.correctCount + ' מתוך ' + cfg.questions.length + ' נכונות · ', h('b', null, '+' + s.xp + ' XP')),
+            h('p', null, s.correctCount + ' מתוך ' + cfg.questions.length + ' נכונות · ', h('b', null, xpTxt(s.xp))),
             h('p', { class: 'muted' }, left ? 'נשארו ' + left + ' שאלות ברשימת החזרה. שאלה יוצאת אחרי שתי תשובות נכונות ברצף.' : 'רשימת החזרה ריקה. כל הכבוד!'),
             skillsBox(),
             h(
@@ -544,11 +550,11 @@
           h(
             'div',
             { class: 'kpis', style: { margin: '12px 0' } },
-            h('div', { class: 'kpi' }, h('b', null, '+' + s.xp), 'XP בשלב'),
+            h('div', { class: 'kpi' }, h('b', null, xpTxt(s.xp)), 'בשלב הזה'),
             h('div', { class: 'kpi' }, h('b', null, s.correctCount + '/' + cfg.questions.length), 'תשובות נכונות'),
             h('div', { class: 'kpi' }, h('b', null, String(Math.max(rec.prevBest, stars)) + '★'), rec.improved && rec.prevBest ? 'שיא חדש!' : 'השיא בשלב')
           ),
-          h('p', { class: 'small muted' }, 'פירוט: ' + (s.xp - finishXP) + ' XP מתשובות, ' + stars * STAR_XP + ' XP על ' + stars + ' כוכבים' + (cfg.boss ? ', ' + BOSS_XP + ' XP על ניצחון בבוס' : '')),
+          h('p', { class: 'small muted' }, 'פירוט: ', xpTxt(s.xp - finishXP, false), ' מתשובות, ', xpTxt(stars * STAR_XP, false), ' על ' + stars + ' כוכבים', cfg.boss ? [', ', xpTxt(BOSS_XP, false), ' על ניצחון בבוס'] : null),
           badges.length
             ? h('div', { class: 'notice good' }, badges.map((id) => { const b = SL.BADGES.find((x) => x.id === id); return h('div', null, b.icon + ' תג חדש: ' + b.name); }))
             : null,
@@ -576,7 +582,7 @@
         h(
           'div',
           { class: 'card pop' },
-          h('div', { class: 'fin-hero' }, h('div', { class: 'emoji', 'aria-hidden': 'true' }, '💔'), h('h1', null, 'נגמרו הלבבות'), h('p', null, 'לא נורא, ככה לומדים. ה-XP שצברתם נשמר: ', h('b', null, '+' + s.xp + ' XP'))),
+          h('div', { class: 'fin-hero' }, h('div', { class: 'emoji', 'aria-hidden': 'true' }, '💔'), h('h1', null, 'נגמרו הלבבות'), h('p', null, 'לא נורא, ככה לומדים. ה-XP שצברתם נשמר: ', h('b', null, xpTxt(s.xp)))),
           h('h2', null, 'מה כדאי לזכור'),
           h(
             'ul',
