@@ -40,6 +40,7 @@ body{
 .logo-slot{height:44px;max-width:150px;display:flex;align-items:center}
 .logo-slot img{max-height:44px;max-width:150px;object-fit:contain}
 .brand{font-family:var(--font-display);font-size:18px;color:var(--gold);text-shadow:var(--glow)}
+.author{font-family:var(--font-display);font-size:18px;color:var(--gold);text-shadow:var(--glow);white-space:nowrap}
 .hud{display:flex;gap:8px;font-variant-numeric:tabular-nums}
 .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:15px}
 .pill b{color:var(--gold)}
@@ -136,6 +137,7 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;width:100%;height:100
 <div class="app">
   <div class="top">
     <div class="logo-slot" id="logoSlot"><span class="brand" dir="ltr">Alpa cosmetics</span></div>
+    <span class="author" id="author">תומר ירדני</span>
     <div class="hud" id="hud" hidden>
       <span class="pill">⏱ <b id="hudTime">20</b></span>
       <span class="pill">ניקוד <b id="hudScore">0</b></span>
@@ -299,7 +301,7 @@ const store = {
 };
 const shuffle = arr => { const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 const screens = ["scrStart","scrQ","scrEnd","scrBoard","scrAdmin"];
-function show(id){ if(typeof stopPolling === "function" && id !== "scrEnd" && id !== "scrBoard") stopPolling(); screens.forEach(s => $(s).hidden = s !== id); $("hud").hidden = id !== "scrQ"; window.scrollTo(0,0); }
+function show(id){ if(typeof stopPolling === "function" && id !== "scrEnd" && id !== "scrBoard") stopPolling(); screens.forEach(s => $(s).hidden = s !== id); $("hud").hidden = id !== "scrQ"; $("author").hidden = id === "scrQ"; window.scrollTo(0,0); }
 
 /* ---------- Skin & logo ---------- */
 function setSkin(sk){
