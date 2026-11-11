@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>טריוויה של חנוכה</title>
+<title>Alpa cosmetics · טריוויה של חנוכה</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Assistant:wght@400;600;700;800&display=swap">
@@ -46,6 +46,8 @@ body{
 h1,h2{font-family:var(--font-display);font-weight:400;margin:0;text-wrap:balance;line-height:1.15}
 h1{font-size:clamp(34px,10vw,48px);color:var(--gold);text-shadow:var(--glow)}
 h2{font-size:24px}
+.subtitle{font-family:var(--font-display);font-size:22px;color:var(--ink);margin-top:-8px}
+.copyright{margin-top:auto;padding-top:8px;text-align:center;font-size:12px;color:var(--muted)}
 p{margin:0;line-height:1.6}
 .muted{color:var(--muted)}
 .screen{display:flex;flex-direction:column;gap:16px;align-items:stretch}
@@ -133,7 +135,7 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;width:100%;height:100
 <canvas id="confetti" aria-hidden="true"></canvas>
 <div class="app">
   <div class="top">
-    <div class="logo-slot" id="logoSlot"><span class="brand">טריוויה של חנוכה</span></div>
+    <div class="logo-slot" id="logoSlot"><span class="brand" dir="ltr">Alpa cosmetics</span></div>
     <div class="hud" id="hud" hidden>
       <span class="pill">⏱ <b id="hudTime">20</b></span>
       <span class="pill">ניקוד <b id="hudScore">0</b></span>
@@ -143,7 +145,8 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;width:100%;height:100
   <!-- START -->
   <section class="screen center" id="scrStart">
     <svg class="mascot bob" id="mascotStart" data-mood="happy" viewBox="0 0 200 190" role="img" aria-label="סופגנייה מחייכת"></svg>
-    <h1>טריוויה של חנוכה</h1>
+    <h1 dir="ltr">Alpa cosmetics</h1>
+    <p class="subtitle">טריוויה של חנוכה</p>
     <p class="muted">שאלות על חנוכה, טיימר ולוח מובילים. ענו מהר ונכון כדי לצבור יותר נקודות.</p>
     <div class="facts"><span>12 שאלות</span><span>·</span><span>20 שניות לשאלה</span><span>·</span><span>3–5 דקות</span></div>
     <div class="card" style="width:100%;text-align:start;display:flex;flex-direction:column;gap:14px">
@@ -234,6 +237,8 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;width:100%;height:100
     </div>
     <button class="btn ghost" id="btnBack2">חזרה</button>
   </section>
+
+  <footer class="copyright">© 2026 כל הזכויות שמורות לתומר ירדני</footer>
 </div>
 
 <script>
@@ -311,7 +316,7 @@ function renderLogo(){
   const src = store.get("ht_logo", null), slot = $("logoSlot");
   slot.textContent = "";
   if(src){ const img = new Image(); img.src = src; img.alt = "לוגו החברה"; slot.appendChild(img); }
-  else { const s = document.createElement("span"); s.className = "brand"; s.textContent = "טריוויה של חנוכה"; slot.appendChild(s); }
+  else { const s = document.createElement("span"); s.className = "brand"; s.dir = "ltr"; s.textContent = "Alpa cosmetics"; slot.appendChild(s); }
 }
 renderLogo();
 $("logoFile").onchange = e => {
