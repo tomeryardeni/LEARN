@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>טריוויה של חנוכה</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Assistant:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: one-screen phone game; a single card stage centered under a slim top bar. Two skins chosen in-game. */
+:root{
+  --font-display:"Secular One","Assistant",Arial,sans-serif;
+  --font-body:"Assistant",Arial,sans-serif;
+  /* skin: night (default) */
+  --bg:#0f1640; --bg2:#1b2363; --ink:#f6f1e4; --muted:#b9bddc;
+  --card:#18205a; --line:#2e3a85; --gold:#ffcf5a; --accent:#ff4f79;
+  --ok:#2fd27f; --bad:#ff5a5a; --opt:#232d74; --optInk:#f6f1e4;
+  --glow:0 0 18px rgba(255,207,90,.45);
+  color-scheme:dark;
+}
+body[data-skin="classic"]{
+  --bg:#fbf6ec; --bg2:#f1e7d3; --ink:#18214f; --muted:#5e6385;
+  --card:#ffffff; --line:#e3d7bd; --gold:#c08a2c; --accent:#d8345a;
+  --ok:#1e9a5c; --bad:#cf3341; --opt:#f6efe0; --optInk:#18214f;
+  --glow:none;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{
+  margin:0;font-family:var(--font-body);font-size:17px;color:var(--ink);
+  background:radial-gradient(120% 70% at 50% 0%,var(--bg2),var(--bg) 70%);background-color:var(--bg);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:12px 20px;-webkit-tap-highlight-color:transparent;
+}
+.app{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px;min-height:100%}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.logo-slot{height:44px;max-width:150px;display:flex;align-items:center}
+.logo-slot img{max-height:44px;max-width:150px;object-fit:contain}
+.brand{font-family:var(--font-display);font-size:18px;color:var(--gold);text-shadow:var(--glow)}
+.hud{display:flex;gap:8px;font-variant-numeric:tabular-nums}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:15px}
+.pill b{color:var(--gold)}
+h1,h2{font-family:var(--font-display);font-weight:400;margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(34px,10vw,48px);color:var(--gold);text-shadow:var(--glow)}
+h2{font-size:24px}
+p{margin:0;line-height:1.6}
+.muted{color:var(--muted)}
+.screen{display:flex;flex-direction:column;gap:16px;align-items:stretch}
+.center{text-align:center;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px}
+label{font-weight:700;font-size:15px}
+input[type=text]{
+  width:100%;font:inherit;font-size:18px;padding:13px 14px;border-radius:14px;
+  border:2px solid var(--line);background:var(--bg);color:var(--ink);
+}
+input[type=text]:focus{outline:none;border-color:var(--gold)}
+.field{display:flex;flex-direction:column;gap:6px}
+.btn{
+  font:inherit;font-weight:800;font-size:19px;border:0;border-radius:999px;padding:15px 22px;cursor:pointer;
+  background:var(--accent);color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.25);transition:transform .08s;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.btn:focus-visible,.opt:focus-visible,.seg button:focus-visible,.link:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.link{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;text-decoration:underline;cursor:pointer;padding:4px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{font:inherit;font-weight:700;padding:11px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+.facts{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:14px;color:var(--muted);font-weight:600}
+
+/* mascot */
+.mascot{width:150px;height:auto;max-width:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+.mascot.small{width:96px}
+.mascot .eye-open,.mascot .eye-x,.mascot .mouth-o,.mascot .mouth-sad{display:none}
+.mascot[data-mood="happy"] .eye-open{display:inline}
+.mascot[data-mood="happy"] .eye-norm{display:none}
+.mascot[data-mood="sad"] .eye-x,.mascot[data-mood="sad"] .mouth-sad{display:inline}
+.mascot[data-mood="sad"] .eye-norm,.mascot[data-mood="sad"] .mouth-smile{display:none}
+.mascot[data-mood="think"] .mouth-o{display:inline}
+.mascot[data-mood="think"] .mouth-smile{display:none}
+@media (prefers-reduced-motion:no-preference){
+  .bob{animation:bob 2.4s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-6px) rotate(-2deg)}}
+  .pop{animation:pop .35s ease-out}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+}
+
+/* question */
+.qhead{display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:10px;border-radius:999px;background:var(--opt);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--gold);transition:width .25s linear}
+.bar.low i{background:var(--bad)}
+.qtext{font-size:22px;font-weight:800;line-height:1.4;text-align:center}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:start;font:inherit;font-size:18px;font-weight:700;
+  padding:13px 14px;border-radius:16px;border:2px solid var(--line);background:var(--opt);color:var(--optInk);cursor:pointer;
+}
+.opt .n{flex:0 0 30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);color:var(--gold);font-size:15px;border:1px solid var(--line)}
+.opt.correct{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 22%,var(--opt))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 22%,var(--opt))}
+.opt[disabled]{cursor:default}
+.feedback{min-height:64px;display:flex;align-items:center;justify-content:center;gap:12px}
+.bubble{font-family:var(--font-display);font-size:24px}
+.bubble.ok{color:var(--ok)} .bubble.bad{color:var(--bad)}
+.note{font-size:15px;color:var(--muted);text-align:center}
+
+/* results */
+.score-big{font-family:var(--font-display);font-size:64px;color:var(--gold);text-shadow:var(--glow);line-height:1;font-variant-numeric:tabular-nums}
+.board{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.board li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--opt);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.board li.me{border-color:var(--gold)}
+.board .rank{flex:0 0 32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--bg2);color:var(--ink)}
+.board li:nth-child(1) .rank{background:#f5c542;color:#3a2a00}
+.board li:nth-child(2) .rank{background:#c9d1dc;color:#222}
+.board li:nth-child(3) .rank{background:#d99a62;color:#2a1400}
+.board .nm{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board .pts{font-weight:800;color:var(--gold)}
+.empty{text-align:center;color:var(--muted);padding:12px}
+.small{font-size:13px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.btn{flex:1 1 160px}
+.admin{display:flex;flex-direction:column;gap:10px}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+canvas#confetti{position:fixed;inset:0;pointer-events:none;width:100%;height:100%}
+</style>
+</head>
+<body data-skin="night">
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="app">
+  <div class="top">
+    <div class="logo-slot" id="logoSlot"><span class="brand">טריוויה של חנוכה</span></div>
+    <div class="hud" id="hud" hidden>
+      <span class="pill">⏱ <b id="hudTime">20</b></span>
+      <span class="pill">ניקוד <b id="hudScore">0</b></span>
+    </div>
+  </div>
+
+  <!-- START -->
+  <section class="screen center" id="scrStart">
+    <svg class="mascot bob" id="mascotStart" data-mood="happy" viewBox="0 0 200 190" role="img" aria-label="סופגנייה מחייכת"></svg>
+    <h1>טריוויה של חנוכה</h1>
+    <p class="muted">שאלות על חנוכה, טיימר ולוח מובילים. ענו מהר ונכון כדי לצבור יותר נקודות.</p>
+    <div class="facts"><span>12 שאלות</span><span>·</span><span>20 שניות לשאלה</span><span>·</span><span>3–5 דקות</span></div>
+    <div class="card" style="width:100%;text-align:start;display:flex;flex-direction:column;gap:14px">
+      <div class="field">
+        <label for="playerName">איך קוראים לך?</label>
+        <input type="text" id="playerName" maxlength="24" placeholder="למשל: נועה כהן" autocomplete="name">
+      </div>
+      <div class="field">
+        <span id="skinLbl" style="font-weight:700;font-size:15px">סגנון עיצוב</span>
+        <div class="seg" role="group" aria-labelledby="skinLbl">
+          <button type="button" id="skinNight" aria-pressed="true">לילה זוהר</button>
+          <button type="button" id="skinClassic" aria-pressed="false">קלאסי בהיר</button>
+        </div>
+      </div>
+      <button class="btn" id="btnStart">מתחילים!</button>
+    </div>
+    <div class="row" style="justify-content:center">
+      <button class="link" id="btnShowBoard">לוח המובילים</button>
+      <button class="link" id="btnAdmin">הגדרות מארגן</button>
+    </div>
+  </section>
+
+  <!-- QUESTION -->
+  <section class="screen" id="scrQ" hidden>
+    <div class="qhead"><span id="qNum">1/12</span><span id="qName"></span></div>
+    <div class="bar" id="timeBar"><i id="timeFill"></i></div>
+    <div class="card"><div class="qtext" id="qText"></div></div>
+    <div class="opts" id="opts"></div>
+    <div class="feedback">
+      <svg class="mascot small" id="mascotQ" data-mood="think" viewBox="0 0 200 190" aria-hidden="true"></svg>
+      <div>
+        <div class="bubble" id="bubble">חושב…</div>
+      </div>
+    </div>
+    <p class="note" id="explain" hidden></p>
+    <button class="btn" id="btnNext" hidden>לשאלה הבאה ←</button>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen center" id="scrEnd" hidden>
+    <svg class="mascot pop" id="mascotEnd" data-mood="happy" viewBox="0 0 200 190" aria-hidden="true"></svg>
+    <h2 id="endTitle">כל הכבוד!</h2>
+    <div class="score-big" id="endScore">0</div>
+    <p class="muted" id="endSub"></p>
+    <div class="card" style="width:100%;text-align:start;display:flex;flex-direction:column;gap:10px">
+      <h2 style="font-size:22px">לוח המובילים</h2>
+      <ol class="board" id="board"></ol>
+      <p class="small muted" id="boardNote"></p>
+    </div>
+    <div class="row" style="width:100%">
+      <button class="btn" id="btnAgain">משחק חוזר</button>
+      <button class="btn ghost" id="btnHome">למסך הפתיחה</button>
+    </div>
+  </section>
+
+  <!-- BOARD ONLY -->
+  <section class="screen" id="scrBoard" hidden>
+    <h2>לוח המובילים</h2>
+    <p class="muted small">שלושת הראשונים הם הזוכים.</p>
+    <ol class="board" id="board2"></ol>
+    <p class="small muted" id="boardNote2"></p>
+    <button class="btn ghost" id="btnBack1">חזרה</button>
+  </section>
+
+  <!-- ADMIN -->
+  <section class="screen" id="scrAdmin" hidden>
+    <h2>הגדרות מארגן</h2>
+    <div class="card admin">
+      <label for="logoFile">לוגו החברה (יוצג בראש כל מסך)</label>
+      <input type="file" id="logoFile" accept="image/*">
+      <button class="link" id="btnLogoClear" style="align-self:flex-start">הסרת לוגו</button>
+      <p class="small muted">הלוגו נשמר בדפדפן במכשיר הזה בלבד.</p>
+    </div>
+    <div class="card admin">
+      <span style="font-weight:700">איפוס לוח המובילים המקומי</span>
+      <p class="small muted">מוחק את התוצאות שנשמרו במכשיר הזה.</p>
+      <div class="confirm">
+        <button class="btn ghost" id="btnReset">איפוס</button>
+        <span id="resetAsk" hidden>למחוק את כל התוצאות המקומיות?</span>
+        <button class="btn" id="btnResetYes" hidden>כן, למחוק</button>
+        <button class="btn ghost" id="btnResetNo" hidden>ביטול</button>
+        <span id="resetDone" class="small muted" hidden>נמחק.</span>
+      </div>
+    </div>
+    <button class="btn ghost" id="btnBack2">חזרה</button>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Questions (Hebrew). answer = index of correct option ---------- */
+const BANK = [
+  {q:"כמה ימים נמשך חג החנוכה?", o:["7","8","9","10"], a:1},
+  {q:"באיזה תאריך עברי מתחיל חנוכה?", o:["כ\"ה בכסלו","ט\"ו בשבט","י\"ד באדר","א' בטבת"], a:0},
+  {q:"איך נקרא הנר שבעזרתו מדליקים את שאר נרות החנוכה?", o:["המאיר","השמש","המוביל","הראשון"], a:1},
+  {q:"כמה נרות מדליקים בסך הכול בכל ימי החנוכה, בלי נר השמש?", o:["36","44","32","40"], a:0, x:"1+2+3+…+8 = 36. עם השמש מגיעים ל-44."},
+  {q:"כמה קנים יש לחנוכייה, כולל מקום לשמש?", o:["7","8","9","10"], a:2},
+  {q:"מה ראשי התיבות של האותיות על הסביבון בארץ ישראל?", o:["נס גדול היה פה","נס גדול היה שם","נר גדול הדליקו פה","נס גדול הוא פה"], a:0},
+  {q:"איזו אות מופיעה על סביבון בחוץ לארץ במקום האות פ'?", o:["ת","ש","ח","מ"], a:1, x:"בחו\"ל: נס גדול היה שם."},
+  {q:"מי פתח במרד נגד השלטון היווני-סלאוקי?", o:["יהודה המכבי","מתתיהו","שמעון","יוחנן"], a:1},
+  {q:"מה היה כינויו של יהודה, בנו של מתתיהו?", o:["הגיבור","החשמונאי הגדול","המכבי","הכהן"], a:2},
+  {q:"מה שמו של המלך הסלאוקי שגזר את הגזרות על היהודים לפי סיפור החנוכה?", o:["נבוכדנצר","אנטיוכוס","כורש","טיטוס"], a:1},
+  {q:"לפי המסורת, מה מצאו החשמונאים כשנכנסו למקדש?", o:["מגילה עתיקה","פך שמן אחד טהור","חרב זהב","מנורה שבורה"], a:1},
+  {q:"לפי המסורת, כמה ימים דלק השמן של הנס?", o:["יום אחד","שלושה ימים","שבעה ימים","שמונה ימים"], a:3},
+  {q:"מה פירוש השם \"חנוכה\"?", o:["חנוכת המקדש","חנייה במדבר","חן ויופי","חינוך הילדים"], a:0},
+  {q:"מדוע אוכלים בחנוכה סופגניות ולביבות?", o:["כי הן מתוקות","כי הן מטוגנות בשמן, זכר לנס פך השמן","כי כך אכלו המכבים בקרב","כי זה מאכל חורף"], a:1},
+  {q:"למה נוהגים להניח את החנוכייה ליד החלון או פתח הבית?", o:["כדי שלא תיפול","כדי לחמם את הבית","כדי לפרסם את הנס","כדי לחסוך בחשמל"], a:2},
+  {q:"לפי שיטת בית הלל, שלפיה נוהגים היום, איך מדליקים?", o:["מוסיפים נר בכל לילה","מורידים נר בכל לילה","שמונה נרות בכל לילה","נר אחד בכל לילה"], a:0},
+  {q:"איזו תפילה מוסיפים בתפילה ובברכת המזון בחנוכה?", o:["על הניסים","יעלה ויבוא","הלל הגדול","נשמת כל חי"], a:0},
+  {q:"איזה שיר נהוג לשיר אחרי הדלקת הנרות?", o:["מעוז צור","אדון עולם","שלום עליכם","דיינו"], a:0},
+  {q:"מאיזה יישוב יצאה משפחת החשמונאים לפי המסורת?", o:["ירושלים","חברון","מודיעין","בית לחם"], a:2},
+  {q:"איך נקרא הכסף שנהוג לתת לילדים בחנוכה?", o:["דמי כיס","דמי חנוכה","מעות חיטים","מחצית השקל"], a:1},
+  {q:"איזו אישה מזוהה במסורת עם חנוכה?", o:["אסתר","דבורה","יהודית","רות"], a:2},
+  {q:"במשחק הסביבון המקובל, מה קורה כשהסביבון נופל על ג'?", o:["לא קורה כלום","לוקחים את כל הקופה","לוקחים חצי","מוסיפים לקופה"], a:1}
+];
+const N_Q = 12, Q_TIME = 20;
+
+/* ---------- Mascot (original SVG sufganiya) ---------- */
+const MASCOT = `
+<ellipse cx="100" cy="172" rx="62" ry="10" fill="rgba(0,0,0,.18)"/>
+<path d="M22 112c0-46 35-78 78-78s78 32 78 78c0 34-35 54-78 54s-78-20-78-54z" fill="#d9822b"/>
+<path d="M30 104c0-40 31-66 70-66s70 26 70 66c0 10-6 16-16 14-14-3-30 6-54 6s-40-9-54-6c-10 2-16-4-16-14z" fill="#e9a04a"/>
+<path d="M40 72c10-22 32-36 60-36s50 14 60 36c-14-8-26-6-34 2-8-10-22-14-26-2-6-12-22-10-28 2-8-8-20-10-32-2z" fill="#fff7ec"/>
+<circle cx="70" cy="58" r="2.2" fill="#fff"/><circle cx="128" cy="52" r="2.2" fill="#fff"/><circle cx="104" cy="44" r="1.8" fill="#fff"/><circle cx="148" cy="66" r="2" fill="#fff"/>
+<path d="M88 40c2-12 22-12 24 0 2 10-8 12-12 22-4-10-14-12-12-22z" fill="#c4122f"/>
+<circle cx="96" cy="40" r="3" fill="#ff6b80"/>
+<g class="eye-norm"><ellipse cx="76" cy="104" rx="11" ry="13" fill="#fff"/><ellipse cx="124" cy="104" rx="11" ry="13" fill="#fff"/><circle cx="78" cy="106" r="6" fill="#2a1a10"/><circle cx="122" cy="106" r="6" fill="#2a1a10"/><circle cx="80" cy="103" r="2" fill="#fff"/><circle cx="124" cy="103" r="2" fill="#fff"/></g>
+<g class="eye-open"><path d="M64 106q12-14 24 0" stroke="#2a1a10" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M112 106q12-14 24 0" stroke="#2a1a10" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+<g class="eye-x" stroke="#2a1a10" stroke-width="5" stroke-linecap="round"><path d="M68 98l16 14M84 98l-16 14"/><path d="M116 98l16 14M132 98l-16 14"/></g>
+<circle cx="58" cy="124" r="8" fill="#ff8a8a" opacity=".55"/><circle cx="142" cy="124" r="8" fill="#ff8a8a" opacity=".55"/>
+<path class="mouth-smile" d="M84 128q16 18 32 0" stroke="#2a1a10" stroke-width="5" fill="#8a1d2a" stroke-linecap="round"/>
+<ellipse class="mouth-o" cx="100" cy="134" rx="7" ry="8" fill="#8a1d2a" stroke="#2a1a10" stroke-width="4"/>
+<path class="mouth-sad" d="M84 140q16-14 32 0" stroke="#2a1a10" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+document.querySelectorAll("svg.mascot").forEach(s => s.innerHTML = MASCOT);
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+const shuffle = arr => { const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const screens = ["scrStart","scrQ","scrEnd","scrBoard","scrAdmin"];
+function show(id){ screens.forEach(s => $(s).hidden = s !== id); $("hud").hidden = id !== "scrQ"; window.scrollTo(0,0); }
+
+/* ---------- Skin & logo ---------- */
+function setSkin(sk){
+  document.body.dataset.skin = sk;
+  $("skinNight").setAttribute("aria-pressed", sk === "night");
+  $("skinClassic").setAttribute("aria-pressed", sk === "classic");
+  store.set("ht_skin", sk);
+}
+$("skinNight").onclick = () => setSkin("night");
+$("skinClassic").onclick = () => setSkin("classic");
+setSkin(store.get("ht_skin","night"));
+
+function renderLogo(){
+  const src = store.get("ht_logo", null), slot = $("logoSlot");
+  slot.textContent = "";
+  if(src){ const img = new Image(); img.src = src; img.alt = "לוגו החברה"; slot.appendChild(img); }
+  else { const s = document.createElement("span"); s.className = "brand"; s.textContent = "טריוויה של חנוכה"; slot.appendChild(s); }
+}
+renderLogo();
+$("logoFile").onchange = e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => { // shrink so it fits in storage
+    const scale = Math.min(1, 320 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    store.set("ht_logo", c.toDataURL("image/png")); URL.revokeObjectURL(url); renderLogo();
+  };
+  img.src = url;
+};
+$("btnLogoClear").onclick = () => { store.del("ht_logo"); $("logoFile").value = ""; renderLogo(); };
+
+/* ---------- Leaderboard: shared (claude.ai db) when available, else this device ---------- */
+let sharedDb = null, userApi = null, sharedScores = null;
+const LOCAL_KEY = "ht_scores";
+function localScores(){ return store.get(LOCAL_KEY, []); }
+(async function initShared(){
+  try{
+    if(!window.claude || !window.claude.use) return;
+    const db = await window.claude.use("db"); if(!db) return;
+    userApi = await window.claude.use("user");
+    sharedDb = db;
+    db.collection("scores").orderBy("score","desc").limit(50).onSnapshot(snap => {
+      sharedScores = snap.docs.map(d => ({id:d.id, ...d.data()}));
+      if(!$("scrEnd").hidden) renderBoard("board","boardNote");
+      if(!$("scrBoard").hidden) renderBoard("board2","boardNote2");
+    }, () => { sharedScores = null; });
+  }catch(e){ sharedDb = null; }
+})();
+
+async function saveScore(entry){
+  const local = localScores(); local.push(entry); store.set(LOCAL_KEY, local);
+  if(!sharedDb || !userApi) return;
+  try{
+    const me = await userApi.id(); if(!me) return;
+    const ref = sharedDb.collection("scores").doc(me);
+    const cur = await ref.get();
+    const prev = cur.exists ? cur.data() : null;
+    if(!prev || entry.score > (prev.score || 0)) await ref.set({name:entry.name, score:entry.score, correct:entry.correct, t:entry.t});
+  }catch(e){ /* stays on this device */ }
+}
+
+let lastEntry = null;
+function renderBoard(listId, noteId){
+  const shared = sharedDb && sharedScores;
+  let rows = shared ? sharedScores.slice() : localScores().slice();
+  rows.sort((a,b) => b.score - a.score || a.t - b.t);
+  rows = rows.slice(0, 10);
+  const ol = $(listId); ol.textContent = "";
+  if(!rows.length){ const li = document.createElement("li"); li.className = "empty"; li.textContent = "עוד אין תוצאות. היו הראשונים!"; ol.appendChild(li); }
+  rows.forEach((r,i) => {
+    const li = document.createElement("li");
+    if(lastEntry && r.t === lastEntry.t && r.name === lastEntry.name) li.classList.add("me");
+    const rk = document.createElement("span"); rk.className = "rank"; rk.textContent = i+1;
+    const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = r.name;
+    const pt = document.createElement("span"); pt.className = "pts"; pt.textContent = r.score;
+    li.append(rk, nm, pt); ol.appendChild(li);
+  });
+  $(noteId).textContent = shared ? "לוח משותף לכל המשתתפים. השיא של כל משתתף נשמר." : "התוצאות נשמרות במכשיר הזה.";
+}
+
+/* ---------- Game ---------- */
+let qs = [], qi = 0, score = 0, correct = 0, timer = null, left = Q_TIME, locked = false, player = "";
+
+function start(){
+  player = $("playerName").value.trim();
+  if(!player){ $("playerName").focus(); $("playerName").placeholder = "צריך שם כדי להופיע בטבלה"; return; }
+  store.set("ht_name", player);
+  qs = shuffle(BANK).slice(0, N_Q).map(q => {
+    const order = shuffle(q.o.map((_,i) => i));
+    return {q:q.q, o:order.map(i => q.o[i]), a:order.indexOf(q.a), x:q.x};
+  });
+  qi = 0; score = 0; correct = 0; $("hudScore").textContent = 0; $("qName").textContent = player;
+  show("scrQ"); askQ();
+}
+
+function askQ(){
+  const q = qs[qi]; locked = false;
+  $("qNum").textContent = (qi+1) + "/" + qs.length;
+  $("qText").textContent = q.q;
+  $("mascotQ").dataset.mood = "think";
+  const b = $("bubble"); b.textContent = "חושב…"; b.className = "bubble";
+  $("explain").hidden = true; $("btnNext").hidden = true;
+  const box = $("opts"); box.textContent = "";
+  q.o.forEach((t,i) => {
+    const btn = document.createElement("button"); btn.className = "opt"; btn.type = "button";
+    const n = document.createElement("span"); n.className = "n"; n.textContent = i+1;
+    const s = document.createElement("span"); s.textContent = t;
+    btn.append(n, s); btn.onclick = () => answer(i); box.appendChild(btn);
+  });
+  left = Q_TIME; tick();
+  clearInterval(timer); timer = setInterval(() => { left -= 0.25; tick(); if(left <= 0) answer(-1); }, 250);
+}
+function tick(){
+  const l = Math.max(0, left);
+  $("hudTime").textContent = Math.ceil(l);
+  $("timeFill").style.width = (l / Q_TIME * 100) + "%";
+  $("timeBar").classList.toggle("low", l <= 5);
+}
+function answer(i){
+  if(locked) return; locked = true; clearInterval(timer);
+  const q = qs[qi], btns = $("opts").children;
+  [...btns].forEach((b,k) => { b.disabled = true; if(k === q.a) b.classList.add("correct"); else if(k === i) b.classList.add("wrong"); });
+  const b = $("bubble");
+  if(i === q.a){
+    const pts = 100 + Math.round(100 * Math.max(0,left) / Q_TIME);
+    score += pts; correct++; $("hudScore").textContent = score;
+    b.textContent = "נכון מאוד! +" + pts; b.className = "bubble ok"; $("mascotQ").dataset.mood = "happy";
+  } else {
+    b.textContent = i === -1 ? "נגמר הזמן!" : "אופס!"; b.className = "bubble bad"; $("mascotQ").dataset.mood = "sad";
+  }
+  if(q.x){ $("explain").textContent = q.x; $("explain").hidden = false; }
+  const nb = $("btnNext"); nb.textContent = qi === qs.length-1 ? "לתוצאות ←" : "לשאלה הבאה ←"; nb.hidden = false; nb.focus();
+}
+$("btnNext").onclick = () => { qi++; if(qi < qs.length) askQ(); else finish(); };
+
+async function finish(){
+  lastEntry = {name:player, score, correct, t:Date.now()};
+  $("endScore").textContent = score;
+  $("endSub").textContent = "ענית נכון על " + correct + " מתוך " + qs.length + " שאלות";
+  const ratio = correct / qs.length;
+  $("endTitle").textContent = ratio >= .8 ? "וואו, כל הכבוד!" : ratio >= .5 ? "יפה מאוד!" : "היה כיף! אפשר לנסות שוב";
+  $("mascotEnd").dataset.mood = ratio >= .5 ? "happy" : "sad";
+  show("scrEnd"); renderBoard("board","boardNote");
+  if(ratio >= .5) confetti();
+  await saveScore(lastEntry);
+  renderBoard("board","boardNote");
+}
+
+$("btnStart").onclick = start;
+$("playerName").addEventListener("keydown", e => { if(e.key === "Enter") start(); });
+$("playerName").value = store.get("ht_name","");
+$("btnAgain").onclick = start;
+$("btnHome").onclick = () => show("scrStart");
+$("btnShowBoard").onclick = () => { show("scrBoard"); renderBoard("board2","boardNote2"); };
+$("btnBack1").onclick = () => show("scrStart");
+$("btnAdmin").onclick = () => show("scrAdmin");
+$("btnBack2").onclick = () => show("scrStart");
+function resetUi(ask){ $("btnReset").hidden = ask; ["resetAsk","btnResetYes","btnResetNo"].forEach(id => $(id).hidden = !ask); }
+$("btnReset").onclick = () => { $("resetDone").hidden = true; resetUi(true); };
+$("btnResetNo").onclick = () => resetUi(false);
+$("btnResetYes").onclick = () => { store.del(LOCAL_KEY); resetUi(false); $("resetDone").hidden = false; };
+
+/* ---------- Confetti ---------- */
+function confetti(){
+  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const c = $("confetti"), ctx = c.getContext("2d"), dpr = window.devicePixelRatio || 1;
+  c.width = innerWidth * dpr; c.height = innerHeight * dpr; ctx.scale(dpr, dpr);
+  const colors = ["#ffcf5a","#ff4f79","#4fc3ff","#2fd27f","#ffffff"];
+  const parts = Array.from({length:120}, () => ({x:Math.random()*innerWidth, y:-20-Math.random()*innerHeight*.5, vx:(Math.random()-.5)*2, vy:2+Math.random()*3, r:Math.random()*6.28, s:5+Math.random()*6, c:colors[Math.floor(Math.random()*colors.length)]}));
+  let frames = 0;
+  (function loop(){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    parts.forEach(p => { p.x += p.vx; p.y += p.vy; p.r += .1; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); ctx.restore(); });
+    if(++frames < 220) requestAnimationFrame(loop); else ctx.clearRect(0,0,innerWidth,innerHeight);
+  })();
+}
+})();
+</script>
+</body>
+</html>
