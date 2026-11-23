@@ -47,6 +47,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 h1,h2,h3{font-family:var(--font-display);line-height:1.25;text-wrap:balance;margin:0}
 h1{font-size:1.6rem} h2{font-size:1.2rem} h3{font-size:1.02rem}
 p{margin:0}
+a{color:var(--accent)}
 button,select,input{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -569,7 +570,7 @@ const SCREENS=[
  ]}]},
 
 {id:'mrpplan',mod:'mrp',name:'MRP Plan Options',he:'אפשרויות תוכנית MRP',
- path:'Material Planning > MRP > Options',pnote:'נתיב התפריט למסך הזה לא אומת מול המדריך.',
+ path:'Material Planning > MRP > Options',
  intro:'התהליך: דרישות (תחזיות והזמנות) נטענות לתוכנית הדרישות (MDS), מריצים תוכנית MRP, המתכנן בוחן את ההצעות ב-Planner Workbench ומשחרר אותן לפקודות עבודה ולדרישות רכש.',
  tabs:[{name:'Plan Options',fields:[
   {n:'Schedule',he:'תוכנית דרישות',ex:'MDS-PROD',req:1,d:'תוכנית הדרישות (`MDS`) שעליה התוכנית מבוססת.',v:1,vn:'שם השדה במסך לא אומת מול המדריך.'},
@@ -735,6 +736,7 @@ function done(){
   return FIELDS.filter(x=>S.seen[x.id]).length+MISSIONS.filter(m=>S.mis[m[0]]).length+LOVSETS.filter(x=>S.lov[x.id]).length;
 }
 function drawProg(){ $('#prog').textContent='התקדמות '+Math.round(done()/total()*100)+'%'; }
+const GUIDE=/oracle-ebs-trainer\.html$/.test(location.pathname)?'oracle-ebs-screens.html':'https://claude.ai/artifact/6fgJ8deFT1sfdmWjgakS9M';
 let toastT;
 function toast(msg){const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>{t.hidden=true;},2600);}
 
@@ -784,6 +786,10 @@ function vHome(){
      <li><span class="key">Ctrl+S</span><span>שמירה. בלי שמירה, השינוי לא נכנס למערכת.</span></li>
      <li><span class="key">Ctrl+K</span><span>מציג את רשימת הקיצורים המלאה במערכת שלכם. הקיצורים כאן הם ברירת המחדל, ואצלכם הם עשויים להיות שונים.</span></li>
     </ul>
+   </section>
+   <section class="stack">
+    <h2>רוצים קודם להבין מה כל מסך עושה?</h2>
+    <p class="lead">האפליקציה השנייה, <a href="${GUIDE}" target="_blank" rel="noopener">מדריך המסכים</a>, מסבירה במילים פשוטות 53 מסכים של מלאי ותפ"י: מה כל אחד עושה, מתי פותחים אותו ומה קורה אחר כך.</p>
    </section>
   </div>`;
   $$('[data-step]',main).forEach(b=>b.onclick=()=>{

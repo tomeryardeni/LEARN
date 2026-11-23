@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>מדריך מסכי Oracle EBS</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=Rubik:wght@500;700&display=swap">
+<style>
+/* Layout: one narrow reading column (max 760px), large type, search first.
+   Every screen is one page with the same five plain questions in the same order.
+   Colour marks the kind of screen: setup = indigo, daily work = teal, look-up = slate, periodic = amber. */
+:root{
+  --bg:#ECEFF4; --panel:#FFFFFF; --panel-2:#F3F5F9; --chrome:#DCE2EB;
+  --title:#22304A; --title-ink:#F2F5FA;
+  --ink:#162032; --ink-2:#4A576C; --line:#C3CBD8;
+  --accent:#0B6B6B; --accent-ink:#FFFFFF; --accent-bg:#DDF0EF;
+  --setup:#3545A8; --setup-bg:#E3E6F8; --period:#9A4D0A; --period-bg:#FBEAD6;
+  --view:#43536B; --view-bg:#E2E7EF;
+  --good:#1A7A48; --good-bg:#DCF2E5; --flag:#7D5200; --flag-bg:#FBF0CF;
+  --font-display:'Rubik','Arial Hebrew','Segoe UI',Arial,sans-serif;
+  --font-body:'IBM Plex Sans Hebrew','Arial Hebrew','Segoe UI',Arial,sans-serif;
+  --font-mono:'IBM Plex Mono',Consolas,'Courier New',monospace;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F141C; --panel:#18202B; --panel-2:#1D2633; --chrome:#263243;
+  --title:#1B2535; --title-ink:#E7ECF3;
+  --ink:#E7ECF3; --ink-2:#A3B0C2; --line:#35435A;
+  --accent:#4CC2BF; --accent-ink:#06201F; --accent-bg:#123635;
+  --setup:#A3AEFF; --setup-bg:#272E58; --period:#F2A65A; --period-bg:#45301B;
+  --view:#B4C0D2; --view-bg:#2A3445;
+  --good:#6AD39A; --good-bg:#173A29; --flag:#E5B85C; --flag-bg:#3D3115; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0F141C; --panel:#18202B; --panel-2:#1D2633; --chrome:#263243;
+  --title:#1B2535; --title-ink:#E7ECF3;
+  --ink:#E7ECF3; --ink-2:#A3B0C2; --line:#35435A;
+  --accent:#4CC2BF; --accent-ink:#06201F; --accent-bg:#123635;
+  --setup:#A3AEFF; --setup-bg:#272E58; --period:#F2A65A; --period-bg:#45301B;
+  --view:#B4C0D2; --view-bg:#2A3445;
+  --good:#6AD39A; --good-bg:#173A29; --flag:#E5B85C; --flag-bg:#3D3115; color-scheme:dark }
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.7 var(--font-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--title)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.25;text-wrap:balance;margin:0}
+h1{font-size:1.75rem} h2{font-size:1.2rem} h3{font-size:1.05rem}
+p{margin:0}
+a{color:var(--accent)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.en{font-family:var(--font-mono);font-size:.9em;unicode-bidi:isolate}
+.muted{color:var(--ink-2)}
+.small{font-size:.9rem}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--title);color:var(--title-ink)}
+.top-in{max-width:760px;margin:0 auto;padding-block:10px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.brand b{font-family:var(--font-display);font-size:1.05rem;font-weight:700}
+.brand span{font-size:.82rem;opacity:.85;white-space:nowrap}
+.nav{display:flex;gap:2px;overflow-x:auto;margin-top:8px;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:none;padding:8px 14px;color:inherit;text-decoration:none;font-size:.95rem;border-radius:6px 6px 0 0;opacity:.82}
+.nav a[aria-current="page"]{background:var(--bg);color:var(--ink);opacity:1;font-weight:600}
+main{max-width:760px;margin:0 auto;padding-block:24px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.view{display:grid;gap:28px;grid-template-columns:minmax(0,1fr)}
+.stack{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.lead{font-size:1.08rem;color:var(--ink-2);max-width:60ch}
+
+.search{width:100%;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:13px 16px;font-size:1.05rem}
+.search:focus{border-color:var(--accent);outline:none}
+
+.k{display:inline-block;font-size:.8rem;font-weight:600;line-height:1.6;padding:0 9px;border-radius:999px;white-space:nowrap}
+.k.setup{background:var(--setup-bg);color:var(--setup)}
+.k.daily{background:var(--accent-bg);color:var(--accent)}
+.k.view{background:var(--view-bg);color:var(--view)}
+.k.period{background:var(--period-bg);color:var(--period)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:.9rem;color:var(--ink-2)}
+
+.tasks{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.tasks a{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 2px;border-top:1px solid var(--line);text-decoration:none;color:var(--ink);font-weight:500}
+.tasks li:last-child a{border-bottom:1px solid var(--line)}
+.tasks a:hover{color:var(--accent)}
+.tasks .en{color:var(--ink-2);font-weight:400;text-align:left;flex:none;max-width:48%;overflow-wrap:anywhere}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.scr{display:grid;gap:4px;align-content:start;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 14px;text-decoration:none;color:var(--ink);min-width:0}
+.scr:hover{border-color:var(--accent)}
+.scr-h{display:flex;justify-content:space-between;gap:8px;align-items:start}
+.scr b{font-family:var(--font-display);font-size:1.05rem;line-height:1.3}
+.scr .en{color:var(--ink-2);font-size:.8rem;overflow-wrap:anywhere}
+.scr p{font-size:.93rem;line-height:1.5;color:var(--ink-2)}
+.scr .ok{color:var(--good);font-weight:700;flex:none}
+.group-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+
+.back{text-decoration:none;font-weight:500}
+.win{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.win-t{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--title);color:var(--title-ink);padding:7px 11px;font:500 .86rem var(--font-mono);direction:ltr}
+.win-t i{display:flex;gap:4px;flex:none}
+.win-t i::before,.win-t i::after{content:"";width:9px;height:9px;border:1px solid currentColor;opacity:.6}
+.win-b{background:var(--panel);padding:16px 16px 18px;display:grid;gap:8px}
+.one{font-size:1.2rem;line-height:1.5;font-weight:500}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:.92rem;color:var(--ink-2)}
+.sec{display:grid;gap:6px}
+.sec h2{font-size:1.1rem}
+.sec ol{margin:0;padding-inline-start:26px;display:grid;gap:6px}
+.sec ol li::marker{font-family:var(--font-mono);color:var(--ink-2)}
+.box{border-radius:8px;padding:12px 14px;display:grid;gap:4px}
+.box.grp{background:var(--setup-bg)}
+.box.grp h2{color:var(--setup)}
+.box.tip{background:var(--accent-bg)}
+.box.tip h2{color:var(--accent)}
+.box.v{background:var(--flag-bg);color:var(--flag);font-size:.93rem}
+.crumbs{display:flex;flex-wrap:wrap;gap:4px;direction:ltr;justify-content:flex-end;font:500 .84rem var(--font-mono)}
+.crumbs span{background:var(--chrome);border:1px solid var(--line);border-radius:4px;padding:1px 8px}
+.crumbs i{font-style:normal;color:var(--ink-2)}
+.paths{display:grid;gap:8px}
+.paths div{display:grid;gap:3px}
+.rel{display:flex;flex-wrap:wrap;gap:8px}
+.rel a{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 13px;text-decoration:none;color:var(--ink);font-size:.95rem}
+.rel a:hover{border-color:var(--accent);color:var(--accent)}
+.foot{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:16px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:10px 18px;font-weight:600}
+.btn[aria-pressed="true"]{background:var(--good-bg);color:var(--good)}
+.pn{display:flex;gap:14px;flex-wrap:wrap}
+.pn a{text-decoration:none;font-weight:500}
+
+.flow{display:grid;gap:10px}
+.flow ol{list-style:none;margin:0;padding:0;counter-reset:fs;display:grid;gap:0}
+.flow li{counter-increment:fs;display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.flow li::before{content:counter(fs);font:500 .95rem var(--font-mono);color:var(--ink-2);background:var(--chrome);border-radius:50%;width:30px;height:30px;display:grid;place-items:center;margin-top:2px}
+.flow li a{font-weight:600;text-decoration:none}
+.prose{display:grid;gap:10px;max-width:62ch}
+.prose ul{margin:0;padding-inline-start:22px;display:grid;gap:4px}
+@media (max-width:520px){ h1{font-size:1.5rem} .tasks .en{display:none} }
+</style>
+</head>
+<body>
+<div id="app" dir="rtl" lang="he">
+  <header class="top">
+    <div class="top-in">
+      <div class="brand"><b>מדריך המסכים</b><span id="prog"></span></div>
+      <nav class="nav" id="nav" aria-label="ניווט ראשי">
+        <a href="#home">כל המסכים</a>
+        <a href="#flows">תהליכים</a>
+        <a href="#about">דיוק ומקורות</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main"></main>
+</div>
+
+<script>
+(function(){
+'use strict';
+document.documentElement.lang='he'; document.documentElement.dir='rtl';
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* data strings mark English terms with `backticks` */
+const fmt=s=>esc(s).replace(/`([^`]+)`/g,'<span class="en" dir="ltr">$1</span>');
+const en=s=>'<span class="en" dir="ltr">'+esc(s)+'</span>';
+
+const KINDS={setup:['הגדרה','מגדירים פעם אחת, בהקמה'],daily:['שוטף','עבודה יומיומית'],view:['בירור','רק צופים, לא משנים'],period:['תקופתי','פעם בתקופה']};
+const MODS={INV:'מלאי (Inventory)',BOM:'עצי מוצר (Bills of Material)',WIP:'ייצור (Work in Process)',MRP:'תכנון (MRP)'};
+const GROUPS=[
+ ['org','מבנה החברה והמחסנים','איך חברת האם, החברות הבנות והמחסנים שלהן מוגדרים במערכת.'],
+ ['item','פריטים','איפה פריט נולד, ומה עובר ממנו מחברת האם לחברות הבנות.'],
+ ['move','תנועות מלאי','כל מה שמכניס, מוציא או מזיז מלאי.'],
+ ['look','בירור יתרות','מסכים שרק מציגים: כמה יש, איפה, ומה קרה.'],
+ ['count','ספירות וסגירת תקופה','בדיקה שהמערכת תואמת את המדף, וסגירת החודש.'],
+ ['bom','עצי מוצר ומסלולים','ממה מוצר מורכב, ואיך מייצרים אותו.'],
+ ['wip','פקודות עבודה','פתיחת פקודה, דיווח על הייצור וסגירה.'],
+ ['plan','תכנון','מה לקנות ומה לייצר, כמה ומתי.']
+];
+
+/* k = kind, who = main user, one = one line, what, when, steps, after, grp = note for a group of companies,
+   tip, mod + path (or paths: [[window, path]]), rel = related screens, v = what was not verified */
+const SCREENS=[
+/* ---------- org ---------- */
+{id:'organizations',g:'org',en:'Organization',he:'הקמת ארגון',k:'setup',who:'מיישם',
+ one:'כאן מקימים ארגון חדש: מפעל, מחסן או חברה בת.',
+ what:'כל מפעל או מחסן שמנהל מלאי משלו נקרא במערכת ארגון מלאי. במסך הזה נותנים לו שם וקובעים שהוא ארגון מלאי.',
+ when:'פעם אחת, כשמצטרפת חברה בת חדשה או נפתח אתר חדש.',
+ steps:['נותנים לארגון שם ומיקום.','מסמנים שהוא ארגון מלאי.','משייכים אותו לישות המשפטית, ליחידה התפעולית ולספר החשבונות שלו.'],
+ after:'הארגון קיים, אבל עוד אי אפשר לעבוד בו. הצעד הבא הוא פרמטרי הארגון.',
+ grp:'כל חברה בת מקבלת ארגון אחד או יותר. חברת האם מקבלת בדרך כלל גם ארגון אב, שמשמש רק להגדרת פריטים.',
+ mod:'INV',path:'Setup > Organizations > Organizations',rel:['org-parameters','workday-calendar'],
+ v:'המסך מתועד במדריך של משאבי אנוש, שלא נבדק כאן. הנתיב בתפריט המלאי אומת.'},
+{id:'org-parameters',g:'org',en:'Organization Parameters',he:'פרמטרי ארגון',k:'setup',who:'מיישם, יחד עם הכספים',
+ one:'כללי העבודה של הארגון: מי ארגון האב שלו, ואיך מנהלים בו מלאי.',
+ what:'המסך קובע איך הארגון מתנהג. ההגדרה החשובה ביותר בקבוצת חברות היא ארגון האב לפריטים (`Item Master Organization`): ממנו הארגון מקבל את הפריטים שלו.',
+ when:'פעם אחת, מיד אחרי הקמת הארגון. חלק מההגדרות אי אפשר לשנות אחר כך.',
+ steps:['נותנים לארגון קוד קצר.','בוחרים את ארגון האב לפריטים ואת לוח ימי העבודה.','קובעים איך מנהלים איתורים, מנות ומספרים סידוריים.','יחד עם הכספים, ממלאים את החשבונות ואת הגדרות התמחיר.'],
+ after:'אפשר להגדיר מחסנים ולשייך פריטים לארגון.',
+ grp:'כל חברות הקבוצה מצביעות בדרך כלל על אותו ארגון אב. כך מספר הפריט אחיד בכל הקבוצה.',
+ tip:'את שיטת התמחיר אי אפשר להחליף אחרי שבוצעו תנועות בארגון.',
+ mod:'INV',path:'Setup > Organizations > Parameters',rel:['organizations','subinventories','master-items']},
+{id:'subinventories',g:'org',en:'Subinventories',he:'מחסני משנה',k:'setup',who:'מיישם',
+ one:'מחלקים את המלאי של הארגון למחסנים: חומרי גלם, תוצרת גמורה, הסגר.',
+ what:'מחסן משנה (`Subinventory`) הוא אזור אחסון בתוך הארגון. כל המלאי בארגון נמצא תמיד במחסן משנה כלשהו, ולכן חייבים להגדיר לפחות אחד.',
+ when:'בהקמת הארגון, ובכל פעם שנפתח אזור אחסון חדש.',
+ steps:['נותנים למחסן שם קצר ותיאור.','קובעים אם המערכת עוקבת אחרי הכמויות בו, ואם המלאי בו נחשב נכס במאזן.','בוחרים סטטוס חומר. הוא קובע אם המלאי זמין לתכנון ולשריון.','קובעים אם עובדים במחסן עם איתורים.'],
+ after:'אפשר לקבל למחסן מלאי, להעביר אליו ולנפק ממנו.',
+ grp:'מחסנים לא עוברים בהורשה. כל חברה מגדירה את המחסנים שלה.',
+ tip:'מחסן הסגר או פסולים מקבל בדרך כלל סטטוס שבו המלאי אינו זמין לתכנון, כדי שהתכנון לא יסמוך עליו.',
+ mod:'INV',path:'Setup > Organizations > Subinventories',rel:['stock-locators','subinventory-transfer','material-workbench']},
+{id:'stock-locators',g:'org',en:'Stock Locators',he:'איתורים',k:'setup',who:'מיישם, מנהל מחסן',
+ one:'הכתובת המדויקת בתוך המחסן: שורה, מדף, תא.',
+ what:'איתור (`Locator`) אומר איפה בדיוק מונח הפריט בתוך מחסן המשנה. משתמשים בו רק במחסנים שהוחלט לנהל בהם איתורים.',
+ when:'כשמקימים מחסן עם איתורים, או כשמוסיפים מדפים.',
+ steps:['בוחרים מחסן משנה.','מקלידים את קוד האיתור לפי המבנה שנקבע, למשל שורה, מדף ותא.'],
+ after:'בתנועות במחסן הזה המערכת תבקש גם איתור.',
+ grp:'האיתורים שייכים לכל ארגון בנפרד.',
+ mod:'INV',path:'Setup > Organizations > Stock Locators',rel:['subinventories'],
+ v:'תיאור המסך נכתב מהיכרות כללית. שם המסך והנתיב אומתו.'},
+{id:'shipping-networks',g:'org',en:'Shipping Networks',he:'רשת העברות בין ארגונים',k:'setup',who:'מיישם, יחד עם הכספים',
+ one:'קובעים בין אילו ארגונים מותר להעביר מלאי, ואיך.',
+ what:'לכל זוג ארגונים קובעים אם ההעברה מיידית (`Direct`) או עוברת דרך מלאי בדרך (`Intransit`): המלאי יוצא מהשולח ונכנס למקבל רק כשהוא מגיע.',
+ when:'בהקמה, ובכל פעם שמצטרפת חברה שצריכה לקבל או לשלוח מלאי.',
+ steps:['בוחרים ארגון שולח וארגון מקבל.','בוחרים סוג העברה: מיידית, או דרך מלאי בדרך.','במלאי בדרך, קובעים של מי המלאי בזמן שהוא בדרך (`FOB`).','קובעים אם כל העברה מחייבת הזמנה פנימית.'],
+ after:'אפשר להעביר מלאי בין שני הארגונים.',
+ grp:'זה המסך שמחבר בין חברות הקבוצה. בין חברות נפרדות כדאי לסגור את ההגדרות יחד עם הכספים.',
+ mod:'INV',path:'Setup > Organizations > Shipping Network',rel:['interorg-transfer','receipts']},
+{id:'workday-calendar',g:'org',en:'Workday Calendar',he:'לוח ימי עבודה',k:'setup',who:'מיישם',
+ one:'קובעים באילו ימים הארגון עובד.',
+ what:'הלוח מגדיר ימי עבודה, ימי מנוחה וחריגים, כמו חג או יום השבתה. התכנון ותזמון פקודות העבודה מחשבים תאריכים רק לפי ימי העבודה שבלוח.',
+ when:'בהקמה, ומדי שנה כדי להאריך את הלוח ולעדכן חגים.',
+ steps:['נותנים ללוח שם וטווח תאריכים.','קובעים את דפוס השבוע: כמה ימי עבודה וכמה ימי מנוחה.','מוסיפים חריגים, כמו חגים.','בונים את הלוח.'],
+ after:'משייכים את הלוח לארגון.',
+ grp:'לוח אחד יכול לשמש כמה ארגונים. חברה שעובדת בימים אחרים צריכה לוח משלה.',
+ mod:'BOM',path:'Setup > Calendars',rel:['org-parameters','launch-mrp']},
+
+/* ---------- item ---------- */
+{id:'master-items',g:'item',en:'Master Items',he:'פריטי אב',k:'daily',who:'מיישם, הנדסה',
+ one:'כאן נולד כל פריט בקבוצה.',
+ what:'מקימים את הפריט בארגון האב: מספר, תיאור, יחידת מידה ועשרות מאפיינים שקובעים איך הוא מתנהג. אחר כך משייכים אותו לחברות שצריכות אותו.',
+ when:'בכל פעם שנוסף פריט חדש: חומר גלם, רכיב או מוצר.',
+ steps:['מקלידים מספר פריט ותיאור.','מחילים תבנית מתאימה (`Tools > Copy From`). היא ממלאת את רוב המאפיינים.','בודקים ומתקנים מאפיינים בלשוניות.','משייכים את הפריט לארגונים (`Organization Assignment`) ושומרים.'],
+ after:'הפריט קיים בארגון האב ובכל ארגון ששויך אליו.',
+ grp:'מאפיין שנשלט ברמת Master מעדכנים רק כאן, והשינוי חל על כל החברות. אי אפשר להקים פריט ישירות בחברה בת.',
+ mod:'INV',path:'Items > Master Items',rel:['organization-items','item-templates','attribute-controls','categories']},
+{id:'organization-items',g:'item',en:'Organization Items',he:'פריטי ארגון',k:'daily',who:'מיישם, מתכנן',
+ one:'מעדכנים נתוני פריט שנכונים רק לחברה אחת.',
+ what:'אותו פריט, מנקודת המבט של ארגון אחד. כאן משנים את המאפיינים שכל חברה קובעת לעצמה, כמו מתכנן, כמות מינימום וכמות מקסימום.',
+ when:'כשחברה אחת צריכה ערך שונה משאר הקבוצה.',
+ steps:['נכנסים לארגון הרצוי ומאתרים את הפריט.','משנים את המאפיינים שנשלטים ברמת Org.','מאפיינים שנשלטים ברמת Master אי אפשר לשנות כאן.'],
+ after:'השינוי חל רק בארגון הנוכחי.',
+ grp:'זה הצד של החברה הבת בהורשה: מה שלא נקבע מרכזית, נקבע כאן.',
+ mod:'INV',path:'Items > Organization Items',rel:['master-items','attribute-controls']},
+{id:'attribute-controls',g:'item',en:'Item Attribute Controls',he:'בקרת מאפייני פריט',k:'setup',who:'מיישם',
+ one:'מחליטים, לכל מאפיין של פריט, אם הוא אחיד בקבוצה או נקבע בכל חברה.',
+ what:'לכל מאפיין בוחרים רמת שליטה. `Master Level`: ערך אחד לכל הארגונים. `Org Level`: ערך נפרד לכל ארגון. לחלק מהמאפיינים המערכת קובעת את הרמה מראש.',
+ when:'פעם אחת, בתחילת היישום, לפני שמקימים פריטים.',
+ steps:['עוברים על רשימת המאפיינים.','לכל מאפיין בוחרים `Master Level` או `Org Level`.','למאפייני הסטטוס קובעים גם איך סטטוס הפריט משפיע עליהם.'],
+ after:'ההחלטה קובעת איפה מעדכנים כל מאפיין: במסך פריטי האב או במסך פריטי הארגון.',
+ grp:'זו ההחלטה המרכזית בקבוצת חברות: מה ההנהלה קובעת לכולם, ומה כל חברה קובעת לעצמה.',
+ tip:'דוגמה לרמה קבועה: המתכנן (`Planner`) נשלט תמיד ברמת Org, וסוג הפריט בעץ (`BOM Item Type`) תמיד ברמת Master.',
+ mod:'INV',path:'Setup > Items > Attributes',rel:['master-items','organization-items','status-codes']},
+{id:'item-templates',g:'item',en:'Item Templates',he:'תבניות פריט',k:'setup',who:'מיישם',
+ one:'סט מוכן של הגדרות, שמחילים על פריט חדש בלחיצה.',
+ what:'תבנית שומרת ערכים לעשרות מאפיינים, למשל תבנית לחומר גלם קנוי או למוצר מוגמר. כך כל הפריטים מאותו סוג מוקמים באותה צורה.',
+ when:'בהקמה בונים כמה תבניות. אחר כך משתמשים בהן בכל הקמת פריט.',
+ steps:['נותנים לתבנית שם.','עוברים על המאפיינים, קובעים ערכים ומסמנים אילו מהם התבנית תחיל.','שומרים. מעכשיו אפשר לבחור את התבנית במסך הפריט.'],
+ after:'הקמת פריט מתקצרת, ויש פחות טעויות.',
+ grp:'תבנית בלי קוד ארגון זמינה בכל הארגונים. אפשר גם להגביל תבנית לארגון אחד.',
+ mod:'INV',path:'Setup > Items > Templates',rel:['master-items']},
+{id:'status-codes',g:'item',en:'Status',he:'סטטוסים של פריט',k:'setup',who:'מיישם',
+ one:'מגדירים מצבים לפריט, ומה מותר לעשות בו בכל מצב.',
+ what:'סטטוס הוא מתג אחד ששולט בכמה הרשאות יחד: האם מותר לקנות את הפריט, לייצר אותו, להזיז אותו במלאי או למכור אותו.',
+ when:'בהקמה. אחר כך רק כשנדרש מצב חדש.',
+ steps:['נותנים לסטטוס שם.','מסמנים אילו פעולות מותרות בו: רכישה, ייצור, תנועות מלאי ועוד.'],
+ after:'כשמשנים לפריט סטטוס, ההרשאות שלו מתעדכנות בהתאם.',
+ mod:'INV',path:'Setup > Items > Status Codes',rel:['attribute-controls','master-items']},
+{id:'categories',g:'item',en:'Categories / Category Sets',he:'קטגוריות',k:'setup',who:'מיישם',
+ one:'מסווגים פריטים לקבוצות, לצורך דוחות, רכש, תכנון וספירות.',
+ what:'קטגוריה היא תווית של פריט, למשל מתכת או אריזה. סט קטגוריות (`Category Set`) הוא שיטת סיווג שלמה. לפריט יכולות להיות כמה תוויות, אחת בכל סט.',
+ when:'בהקמה קובעים את שיטות הסיווג. אחר כך משייכים קטגוריה לכל פריט חדש.',
+ steps:['מגדירים את הקטגוריות.','מגדירים סט, וקובעים אם הוא נשלט ברמת Master או ברמת Org.','משייכים פריטים לקטגוריות, מתוך מסך הפריט.'],
+ after:'דוחות, תכנון וספירות יכולים לרוץ לפי קטגוריה.',
+ grp:'בסט ברמת Master, לפריט אותה קטגוריה בכל החברות. בסט ברמת Org, כל חברה יכולה לסווג אחרת.',
+ mod:'INV',paths:[['Categories','Setup > Items > Categories > Category Codes'],['Category Set','Setup > Items > Categories > Category Sets']],rel:['master-items','abc']},
+{id:'units-of-measure',g:'item',en:'Units of Measure',he:'יחידות מידה',k:'setup',who:'מיישם',
+ one:'מגדירים יחידות, כמו יחידה, קרטון וקילוגרם, ואיך ממירים ביניהן.',
+ what:'יחידות מקובצות למשפחות (`Classes`), כמו כמות, משקל ואורך. לכל משפחה יש יחידת בסיס, ולשאר היחידות מגדירים המרה.',
+ when:'בהקמה, לפני הקמת הפריטים.',
+ steps:['מגדירים משפחות של יחידות, ולכל אחת יחידת בסיס.','מוסיפים יחידות לכל משפחה.','מגדירים המרות, למשל קרטון אחד שווה 12 יחידות.'],
+ after:'אפשר לבחור את היחידות בפריטים ובתנועות.',
+ grp:'יחידות המידה אינן שייכות לארגון מסוים. הן משותפות לכל החברות.',
+ mod:'INV',paths:[['Unit of Measure Classes','Setup > Units of Measure > Classes'],['Units of Measure','Setup > Units of Measure > Units of Measure'],['Unit of Measure Conversions','Setup > Units of Measure > Conversions']],rel:['master-items']},
+
+/* ---------- move ---------- */
+{id:'receipts',g:'move',en:'Receipts',he:'קבלת סחורה',k:'daily',who:'מחסנאי',
+ one:'קולטים סחורה שהגיעה מספק, או מחברה אחרת בקבוצה.',
+ what:'מאתרים את ההזמנה שהסחורה שייכת לה, ומדווחים כמה הגיע. המסך שייך למודול הרכש, אבל פותחים אותו גם מתפריט המלאי.',
+ when:'בכל פעם שמגיעה סחורה.',
+ steps:['מחפשים לפי מספר ההזמנה או המשלוח.','מסמנים את השורות שהגיעו ומקלידים כמות.','בוחרים לאן הסחורה נכנסת.'],
+ after:'בקבלה ישירה יתרת המלאי עולה מיד. בקבלה רגילה הסחורה ממתינה באזור הקבלה עד שמעבירים אותה למלאי.',
+ grp:'כאן קולטים גם מלאי שנשלח מחברה אחרת בקבוצה דרך מלאי בדרך.',
+ mod:'INV',path:'Transactions > Receiving > Receipts',rel:['interorg-transfer','material-workbench'],
+ v:'המסך מתועד במדריך הרכש, שלא נבדק כאן. הנתיב בתפריט המלאי אומת.'},
+{id:'misc-transactions',g:'move',en:'Miscellaneous Transactions',he:'תנועות שונות',k:'daily',who:'מחסנאי מורשה',
+ one:'מוציאים או מכניסים מלאי שלא דרך רכש, ייצור או מכירה.',
+ what:'משמש לניפוק לגורם פנימי, כמו מחלקת פיתוח, ולתיקון ידני של יתרות. כל תנועה נרשמת מול חשבון בהנהלת החשבונות.',
+ when:'כשחומר יוצא לשימוש פנימי, או כשמתקנים יתרה.',
+ steps:['בוחרים סוג תנועה: ניפוק או קבלה.','בוחרים פריט, מחסן משנה וכמות.','מציינים את החשבון שיחויב.'],
+ after:'היתרה משתנה מיד, והעלות נרשמת בחשבון שנבחר.',
+ grp:'התנועה נעשית בתוך ארגון אחד. היא לא מעבירה מלאי בין חברות.',
+ tip:'כדאי להגביל את ההרשאה למסך הזה. הוא משנה יתרות בלי מסמך מקור כמו הזמנה או פקודה.',
+ mod:'INV',path:'Transactions > Miscellaneous',rel:['material-transactions','subinventory-transfer']},
+{id:'subinventory-transfer',g:'move',en:'Subinventory Transfer',he:'העברה בין מחסני משנה',k:'daily',who:'מחסנאי',
+ one:'מעבירים מלאי ממחסן למחסן, או מאיתור לאיתור, בתוך אותו ארגון.',
+ what:'תנועה פשוטה של מלאי בתוך האתר, למשל ממחסן חומרי הגלם לרצפת הייצור.',
+ when:'בכל פעם שמזיזים סחורה פיזית בתוך הארגון.',
+ steps:['בוחרים פריט.','בוחרים מאיזה מחסן ולאיזה מחסן.','מקלידים כמות ושומרים.'],
+ after:'היתרה יורדת במחסן אחד ועולה בשני. סך המלאי בארגון לא משתנה.',
+ grp:'רק בתוך ארגון אחד. להעברה בין חברות משתמשים בהעברה בין ארגונים.',
+ mod:'INV',path:'Transactions > Subinventory Transfer',rel:['interorg-transfer','move-orders']},
+{id:'interorg-transfer',g:'move',en:'Interorganization Transfer',he:'העברה בין ארגונים',k:'daily',who:'מחסנאי',
+ one:'מעבירים מלאי מארגון לארגון, למשל בין שתי חברות בקבוצה.',
+ what:'ההעברה יכולה להיות מיידית, או דרך מלאי בדרך: המלאי יוצא מהשולח, ונכנס למקבל רק כשמדווחים שם קבלה. הסוג נקבע מראש ברשת ההעברות.',
+ when:'כשסחורה עוברת בין אתרים או בין חברות.',
+ steps:['בוחרים את ארגון היעד.','בוחרים פריט, מחסן מקור וכמות.','בהעברה מיידית בוחרים גם מחסן יעד. בהעברה דרך מלאי בדרך, הארגון המקבל מדווח קבלה כשהסחורה מגיעה.'],
+ after:'המלאי יורד בארגון השולח. בארגון המקבל הוא עולה מיד, או אחרי דיווח הקבלה.',
+ grp:'הקשר בין שני הארגונים חייב להיות מוגדר מראש ברשת ההעברות.',
+ mod:'INV',path:'Transactions > Interorganization Transfer',rel:['shipping-networks','receipts']},
+{id:'move-orders',g:'move',en:'Move Orders',he:'הוראות העברה',k:'daily',who:'מתכנן, מנהל מחסן',
+ one:'בקשה מסודרת להזיז חומר בתוך הארגון.',
+ what:'במקום להזיז מלאי מיד, פותחים בקשה: מה להעביר, כמה, מאיפה ולאן. המחסן מבצע אותה אחר כך. חלק מההוראות נוצרות אוטומטית, למשל כדי למלא מלאי שירד.',
+ when:'כשרוצים שהעברות יעברו דרך המחסן בצורה מבוקרת.',
+ steps:['פותחים הוראה ובוחרים סוג תנועה.','מוסיפים שורות: פריט, כמות, מחסן מקור ומחסן יעד.','שומרים, ומעבירים לאישור אם נדרש.'],
+ after:'ההוראה ממתינה לביצוע. היתרות עוד לא השתנו.',
+ grp:'הוראת העברה פועלת בתוך ארגון אחד בלבד.',
+ mod:'INV',path:'Move Orders > Move Orders',rel:['transact-move-orders','subinventory-transfer','min-max']},
+{id:'transact-move-orders',g:'move',en:'Transact Move Orders',he:'ביצוע הוראות העברה',k:'daily',who:'מחסנאי',
+ one:'המחסן מבצע בפועל את הוראות ההעברה שנפתחו.',
+ what:'מאתרים הוראות פתוחות, קובעים מאיפה בדיוק לקחת את החומר, ומאשרים את התנועה.',
+ when:'כחלק מהעבודה השוטפת של המחסן.',
+ steps:['מאתרים הוראות העברה פתוחות.','מקצים מלאי לשורות.','מאשרים את התנועה.'],
+ after:'המלאי עובר בפועל.',
+ mod:'INV',path:'Move Orders > Transact Move Orders',rel:['move-orders'],
+ v:'תיאור הצעדים נכתב מהיכרות כללית. שם המסך והנתיב אומתו.'},
+{id:'reservations',g:'move',en:'Item Reservations',he:'שריונים',k:'daily',who:'מתכנן, שירות לקוחות',
+ one:'שומרים מלאי לדרישה מסוימת, כדי שלא ייקחו אותו לצורך אחר.',
+ what:'שריון קושר בין מקור אספקה לבין דרישה, למשל הזמנת לקוח. מלאי משוריין מובטח לדרישה הזו, ולא יוקצה לדרישה אחרת.',
+ when:'כשרוצים להבטיח חומר ללקוח או לדרישה חשובה.',
+ steps:['בוחרים את הדרישה, למשל הזמנת לקוח.','בוחרים פריט וכמות.','אפשר לדייק ולשריין ממחסן, מאיתור או ממנה מסוימים.'],
+ after:'המלאי עדיין על המדף, אבל הוא כבר לא פנוי לאחרים.',
+ mod:'INV',path:'On-hand, Availability > Item Reservations',rel:['material-workbench','supply-demand']},
+
+/* ---------- look ---------- */
+{id:'material-workbench',g:'look',en:'Material Workbench',he:'יתרות מלאי',k:'view',who:'כל מי שעובד עם מלאי',
+ one:'רואים כמה יש מכל פריט, ואיפה.',
+ what:'המסך מציג יתרות במלאי, חומר שנמצא בקבלה וחומר שבדרך. אפשר לרדת עד רמת מחסן משנה, איתור, מנה ומספר סידורי, ולבדוק כמה מהמלאי באמת פנוי.',
+ when:'בכל פעם ששואלים כמה יש לנו.',
+ steps:['מחפשים לפי פריט, מחסן משנה או ארגון.','בוחרים איך להציג את התוצאות.','בודקים זמינות: כמה מהמלאי פנוי.'],
+ after:'המסך בעיקר לבירור. אפשר גם לפתוח ממנו הוראת העברה או לבקש ספירה.',
+ grp:'אפשר לראות מלאי בכמה ארגונים יחד.',
+ mod:'INV',path:'On-hand, Availability > On-hand Quantities',rel:['material-transactions','supply-demand','reservations']},
+{id:'material-transactions',g:'look',en:'Material Transactions',he:'היסטוריית תנועות',k:'view',who:'מחסן, כספים, מיישם',
+ one:'מה נכנס, מה יצא, מתי ועל ידי מי.',
+ what:'כל שינוי ביתרה נרשם כתנועה. כאן מאתרים תנועות לפי פריט, תאריך או סוג, ורואים את הפרטים של כל אחת.',
+ when:'כשיתרה לא מסתדרת, ורוצים להבין מה קרה.',
+ steps:['מסננים לפי טווח תאריכים, פריט או סוג תנועה.','עוברים על רשימת התנועות.','פותחים תנועה כדי לראות את פרטיה.'],
+ after:'מסך בירור בלבד.',
+ mod:'INV',path:'Transactions > View Material Transactions',rel:['material-workbench','misc-transactions'],
+ v:'תיאור הצעדים נכתב מהיכרות כללית. שם המסך והנתיב אומתו.'},
+{id:'supply-demand',g:'look',en:'Item Supply / Demand',he:'אספקה ודרישה לפריט',k:'view',who:'מתכנן',
+ one:'רואים מה צפוי להיכנס, מה צפוי לצאת, ומה תהיה היתרה.',
+ what:'המסך מציג לפריט אחד את המלאי הנוכחי, את האספקות הצפויות, כמו הזמנות רכש ופקודות עבודה, ואת הדרישות הצפויות, כמו הזמנות לקוח ורכיבים לפקודות.',
+ when:'כשרוצים לדעת אם יהיה מספיק מלאי בעתיד הקרוב.',
+ steps:['בוחרים פריט.','בוחרים עד איזה תאריך להסתכל.','קוראים את הרשימה לפי תאריכים.'],
+ after:'מסך בירור בלבד.',
+ mod:'INV',path:'On-hand, Availability > Item Supply / Demand',rel:['material-workbench','planner-workbench'],
+ v:'תיאור המסך נכתב מהיכרות כללית. שם המסך והנתיב אומתו.'},
+
+/* ---------- count ---------- */
+{id:'abc',g:'count',en:'ABC Compiles',he:'ניתוח ABC',k:'period',who:'מנהל מחסן, מיישם',
+ one:'מדרגים פריטים לפי חשיבות, כדי לספור את החשובים לעיתים קרובות יותר.',
+ what:'המערכת קובעת את הערך היחסי של הפריטים לפי מדד שבוחרים, ומדרגת אותם: A לחשובים ביותר, אחריהם B, וכן הלאה.',
+ when:'לפני שמקימים ספירה מחזורית, ומדי פעם כדי לרענן.',
+ steps:['מגדירים את הדרגות.','מריצים את החישוב לפי המדד שנבחר.','מחלקים את הפריטים לדרגות.'],
+ after:'הספירה המחזורית יכולה לקבוע תדירות ספירה שונה לכל דרגה.',
+ mod:'INV',paths:[['ABC Classes','ABC Codes > ABC Classes'],['ABC Compiles','ABC Codes > ABC Compiles'],['ABC Assignment Groups','ABC Codes > ABC Groups']],rel:['cycle-counts']},
+{id:'cycle-counts',g:'count',en:'Cycle Counts',he:'הגדרת ספירה מחזורית',k:'setup',who:'מנהל מחסן, מיישם',
+ one:'מגדירים ספירה שוטפת: אילו פריטים סופרים, כל כמה זמן, ומה הסטייה המותרת.',
+ what:'ספירה מחזורית היא ספירה של חלק קטן מהפריטים בכל פעם, לאורך כל השנה, כדי לשמור על יתרות מדויקות.',
+ when:'בהקמה, ומתחזקים אותה לאורך השנה.',
+ steps:['נותנים לספירה שם, וקובעים את הכללים: סטיות מותרות ומתי נדרש אישור.','קובעים כל כמה זמן סופרים כל דרגת ABC.','מוסיפים את הפריטים שייספרו.','המערכת מתזמנת ספירות ויוצרת בקשות ספירה.'],
+ after:'נוצרות בקשות ספירה, שממתינות להזנה.',
+ grp:'כל ארגון מנהל ספירות משלו.',
+ mod:'INV',path:'Counting > Cycle Counting > Cycle Counts',rel:['abc','cycle-count-entries']},
+{id:'cycle-count-entries',g:'count',en:'Cycle Count Entries',he:'הזנת ספירה ואישור הפרשים',k:'daily',who:'מחסנאי, מנהל מחסן',
+ one:'מקלידים מה נספר בפועל, ומאשרים את ההפרשים.',
+ what:'המחסנאי מזין את הכמות שספר. הפרש שחורג מהסטייה המותרת אינו מתוקן לבד: הוא ממתין לאישור של מנהל.',
+ when:'אחרי כל סבב ספירה.',
+ steps:['מאתרים את בקשות הספירה הפתוחות.','מקלידים את הכמות שנספרה.','המנהל מאשר, דוחה או מבקש ספירה חוזרת, במסך `Approve Counts`.'],
+ after:'היתרה במערכת מתעדכנת לפי הספירה שאושרה.',
+ mod:'INV',paths:[['Cycle Count Entries','Counting > Cycle Counting > Cycle Count Entries'],['Count Adjustment Approvals','Counting > Cycle Counting > Approve Counts']],rel:['cycle-counts','material-transactions']},
+{id:'physical-inventory',g:'count',en:'Physical Inventory',he:'ספירת מלאי מלאה',k:'period',who:'מנהל מחסן, כספים',
+ one:'ספירה כללית של המלאי בנקודת זמן אחת, והתאמת המערכת למדף.',
+ what:'המערכת מצלמת את היתרות, מפיקה תגי ספירה, קולטת את הספירות ומחשבת הפרשים. אחרי אישור היא מתקנת את היתרות.',
+ when:'בדרך כלל פעם בשנה.',
+ steps:['מגדירים את הספירה.','מצלמים את היתרות (`Snapshot`). חובה לעשות זאת לפני הפקת התגים.','מפיקים תגי ספירה, וסופרים.','מקלידים את הספירות.','מאשרים את ההפרשים ומריצים את התיקון.'],
+ after:'היתרות במערכת מתוקנות לפי הספירה.',
+ tip:'המערכת לא עוצרת תנועות בזמן ספירה. צריך לתאם בעצמכם שלא יזוז מלאי במקום שנספר, מרגע צילום היתרות ועד סוף הספירה.',
+ mod:'INV',paths:[['Define Physical Inventory','Counting > Physical Inventory > Physical Inventories'],['Generate Physical Inventory Tags','Counting > Physical Inventory > Tag Generation'],['Physical Inventory Tag Counts','Counting > Physical Inventory > [Tag Counts]'],['Physical Inventory Adjustments','Counting > Physical Inventory > Approve Adjustments']],rel:['cycle-counts','accounting-periods']},
+{id:'accounting-periods',g:'count',en:'Inventory Accounting Periods',he:'תקופות חשבונאיות',k:'period',who:'כספים',
+ one:'פותחים וסוגרים את החודש במלאי.',
+ what:'תנועות מלאי וייצור מקובצות לפי תקופה חשבונאית. כדי לבצע תנועה, התקופה שבה חל תאריך התנועה חייבת להיות פתוחה.',
+ when:'בתחילת כל חודש פותחים תקופה, ובסופו סוגרים.',
+ steps:['פותחים את התקופה הבאה.','לפני סגירה לוחצים על `Pending`, כדי לראות תנועות שלא עובדו.','מטפלים בתנועות שחובה לפתור לפני הסגירה.','סוגרים את התקופה.'],
+ after:'העלויות של התקופה מסוכמות ועוברות להנהלת החשבונות. תנועות שנשארו לא מעובדות לא יעובדו אחרי הסגירה.',
+ tip:'אם התקופה לא פתוחה, אף אחד בארגון לא יכול לבצע תנועות. זו סיבה נפוצה לעבודה שנעצרת בתחילת חודש.',
+ mod:'INV',path:'Accounting Close Cycle > Inventory Accounting Periods',rel:['close-jobs','physical-inventory']},
+
+/* ---------- bom ---------- */
+{id:'bills',g:'bom',en:'Bills of Material',he:'עץ מוצר',k:'daily',who:'הנדסה',
+ one:'רשימת הרכיבים שמרכיבים מוצר, והכמות מכל אחד.',
+ what:'לכל מכלול מגדירים אילו רכיבים נכנסים בו, כמה מכל אחד, ובאיזו פעולה בייצור הם נצרכים. התכנון, התמחיר ופקודות העבודה נשענים על העץ.',
+ when:'כשמוסיפים מוצר חדש, או כשההנדסה משנה מוצר קיים.',
+ steps:['בוחרים את המכלול.','מוסיפים רכיבים: מספר שורה, מספר פעולה, פריט וכמות.','קובעים תאריכי תוקף לכל רכיב.','קובעים איך הרכיב מגיע לייצור: בניפוק ידני או אוטומטי.'],
+ after:'פקודות עבודה חדשות מקבלות את הרכיבים מהעץ, והתכנון מחשב לפיו דרישות.',
+ grp:'עץ מוגדר לכל ארגון. חברה יכולה להפנות לעץ של חברה אחרת בקבוצה (`Common Bill`) במקום להקים אותו מחדש, בתנאי ששתיהן חולקות אותו ארגון אב.',
+ mod:'BOM',path:'Bills > Bills',rel:['routings','indented-bill','discrete-jobs']},
+{id:'indented-bill',g:'bom',en:'Indented Bill of Material',he:'עץ מדורג ושימושי פריט',k:'view',who:'הנדסה, מתכנן',
+ one:'רואים את כל רמות העץ יחד, או בודקים באילו מוצרים רכיב משמש.',
+ what:'העץ המדורג פורס את המוצר על כל רמותיו, עד הרכיב האחרון. המסך `Item Where Used` עושה את ההפך: מראה באילו מכלולים פריט משמש כרכיב.',
+ when:'כשרוצים להבין מבנה של מוצר, או לבדוק על מה משפיע שינוי ברכיב.',
+ steps:['בוחרים פריט.','בוחרים כמה רמות להציג ולאיזה תאריך.','קוראים את המבנה.'],
+ after:'מסכי בירור בלבד.',
+ mod:'BOM',paths:[['Indented Bill of Material','Bills > Indented Bills'],['Item Where Used','Bills > Item WhereUsed']],rel:['bills'],
+ v:'התיאור של Item Where Used נכתב מהיכרות כללית. שמות המסכים והנתיבים אומתו.'},
+{id:'routings',g:'bom',en:'Routings',he:'מסלול ייצור',k:'daily',who:'הנדסת ייצור',
+ one:'סדר הפעולות לייצור מוצר: איפה, עם מי, וכמה זמן.',
+ what:'לכל מכלול מגדירים את רצף הפעולות. לכל פעולה קובעים מחלקה ומשאבים, כלומר עובדים ומכונות, וכמה זמן נדרש מהם.',
+ when:'כשמוסיפים מוצר מיוצר, או כשתהליך הייצור משתנה.',
+ steps:['בוחרים את המכלול.','מוסיפים פעולות לפי הסדר, ולכל אחת מחלקה.','לכל פעולה מוסיפים משאבים וכמה זמן נדרש.','קובעים לאיזה מחסן נכנס המוצר המוגמר.'],
+ after:'פקודות עבודה מקבלות את הפעולות מהמסלול. לפיו נקבעים לוח הזמנים ועלות העבודה.',
+ grp:'מסלול מוגדר לכל ארגון. אי אפשר להפנות למסלול שנמצא בארגון אחר.',
+ mod:'BOM',path:'Routings > Routings',rel:['departments','resources','standard-operations','lead-times']},
+{id:'departments',g:'bom',en:'Departments',he:'מחלקות',k:'setup',who:'מיישם, הנדסת ייצור',
+ one:'אזורי העבודה במפעל, כמו הרכבה, צביעה ואריזה.',
+ what:'מחלקה היא אזור שיש בו עובדים, מכונות או ספקים, ושבו רוצים לאסוף עלויות ולהשוות עומס מול קיבולת. כל פעולה במסלול משויכת למחלקה.',
+ when:'בהקמה, לפני שבונים מסלולים.',
+ steps:['נותנים למחלקה שם.','משייכים אליה את המשאבים שעובדים בה.','קובעים כמה יחידות יש מכל משאב.'],
+ after:'אפשר לבחור את המחלקה בפעולות של מסלולים.',
+ grp:'מחלקות מוגדרות לכל ארגון בנפרד.',
+ mod:'BOM',path:'Routings > Departments',rel:['resources','routings']},
+{id:'resources',g:'bom',en:'Resources',he:'משאבים',k:'setup',who:'מיישם, הנדסת ייצור',
+ one:'מי ומה שמבצע את העבודה: עובדים, מכונות, קבלני משנה.',
+ what:'משאב הוא כל מה שנדרש כדי לבצע, לתזמן או לתמחר פעולה. לכל משאב קובעים איך מודדים אותו, למשל בשעות, ואיך העלות שלו מחויבת.',
+ when:'בהקמה, לפני שמגדירים מחלקות ומסלולים.',
+ steps:['נותנים למשאב שם וסוג.','קובעים יחידת מידה, בדרך כלל שעה.','קובעים אם הוא מחויב אוטומטית או בדיווח ידני.'],
+ after:'אפשר לשייך את המשאב למחלקות ולפעולות.',
+ grp:'משאבים מוגדרים לכל ארגון בנפרד.',
+ mod:'BOM',path:'Routings > Resources',rel:['departments','routings','resource-transactions']},
+{id:'standard-operations',g:'bom',en:'Standard Operations',he:'פעולות סטנדרטיות',k:'setup',who:'הנדסת ייצור',
+ one:'תבנית של פעולה שחוזרת בהרבה מסלולים.',
+ what:'מגדירים פעם אחת פעולה נפוצה, עם המחלקה והמשאבים שלה, ובוחרים אותה במסלולים במקום להקליד הכול מחדש.',
+ when:'בהקמה, כשיש פעולות שחוזרות במוצרים רבים.',
+ steps:['נותנים לפעולה קוד.','בוחרים מחלקה.','מוסיפים משאבים.'],
+ after:'בבניית מסלול בוחרים את הקוד, והפרטים מתמלאים.',
+ mod:'BOM',path:'Routings > Standard Operations',rel:['routings'],
+ v:'תיאור המסך נכתב מהיכרות כללית. שם המסך והנתיב אומתו.'},
+{id:'bom-parameters',g:'bom',en:'Parameters / Alternates',he:'הגדרות עצי מוצר',k:'setup',who:'מיישם',
+ one:'הגדרות כלליות של עצי המוצר בארגון.',
+ what:'קובעים כמה רמות עומק מותרות לעץ, ומגדירים שמות לחלופות (`Alternates`): דרך נוספת להרכיב או לייצר את אותו מוצר.',
+ when:'פעם אחת, בהקמה.',
+ steps:['במסך `Parameters` קובעים את מספר הרמות המרבי בעץ.','במסך `Alternates` מגדירים שמות לחלופות.'],
+ after:'אפשר להקים עצים ומסלולים.',
+ mod:'BOM',paths:[['Parameters','Setup > Parameters'],['Alternates','Setup > Alternates']],rel:['bills','routings']},
+{id:'lead-times',g:'bom',en:'Calculate Lead Times',he:'חישוב זמני ייצור',k:'period',who:'הנדסת ייצור, מתכנן',
+ one:'המערכת מחשבת כמה זמן לוקח לייצר כל פריט, לפי המסלול שלו.',
+ what:'הריצה מחשבת את זמני הייצור ומעדכנת אותם בפריטים. התכנון משתמש בזמנים האלה כדי לקבוע מתי להתחיל כל פקודה.',
+ when:'אחרי שמקימים או משנים מסלולים.',
+ steps:['בוחרים פריט, טווח פריטים או קטגוריה.','מריצים את החישוב.','בודקים את הזמנים שהתעדכנו בפריטים.'],
+ after:'זמני הייצור בפריטים מתעדכנים, גם אם הוקלדו קודם ידנית.',
+ mod:'BOM',path:'Routings > Lead Times',rel:['routings','launch-mrp']},
+
+/* ---------- wip ---------- */
+{id:'wip-parameters',g:'wip',en:'Work in Process Parameters',he:'הגדרות ייצור',k:'setup',who:'מיישם',
+ one:'כללי העבודה של פקודות העבודה בארגון.',
+ what:'קובעים ברירות מחדל לפקודות, לניפוק חומרים ולדיווחים, למשל הסיווג החשבונאי שפקודה חדשה מקבלת.',
+ when:'פעם אחת, בהקמה.',
+ steps:['עוברים על הלשוניות.','קובעים ברירות מחדל לפקודות, לניפוק ולדיווחים.'],
+ after:'אפשר לפתוח פקודות עבודה בארגון.',
+ grp:'ההגדרות נקבעות לכל ארגון בנפרד.',
+ mod:'WIP',path:'Setup > Parameters',rel:['accounting-classes','discrete-jobs'],
+ v:'פירוט ההגדרות נכתב מהיכרות כללית. שם המסך והנתיב אומתו.'},
+{id:'accounting-classes',g:'wip',en:'WIP Accounting Classes',he:'סיווגים חשבונאיים לייצור',k:'setup',who:'כספים, מיישם',
+ one:'קובעים לאילו חשבונות נרשמות עלויות הייצור.',
+ what:'כל פקודת עבודה משויכת לסיווג. הסיווג קובע אילו חשבונות ערך וחשבונות סטייה מחויבים, ומתי.',
+ when:'בהקמה, יחד עם הכספים.',
+ steps:['נותנים לסיווג שם וסוג.','ממלאים את חשבונות הערך ואת חשבונות הסטייה.'],
+ after:'אפשר לבחור את הסיווג בפקודות עבודה.',
+ mod:'WIP',path:'Setup > WIP Accounting Classes',rel:['wip-parameters','discrete-jobs','close-jobs']},
+{id:'discrete-jobs',g:'wip',en:'Discrete Jobs',he:'פקודות עבודה',k:'daily',who:'מתכנן, מנהל ייצור',
+ one:'הוראה לייצר כמות מסוימת של מוצר, עד תאריך מסוים.',
+ what:'פותחים פקודה למכלול, בכמות ובתאריך. הפקודה מקבלת את הרכיבים מהעץ ואת הפעולות מהמסלול. פקודות נוצרות גם מהצעות של התכנון.',
+ when:'כשמחליטים לייצר.',
+ steps:['בוחרים מכלול וסיווג חשבונאי.','מקלידים כמות, ותאריך התחלה או תאריך סיום.','שומרים. פקודה חדשה נפתחת במצב `Unreleased`.','כשמוכנים להתחיל, משנים את המצב ל-`Released`.'],
+ after:'רק אחרי השחרור אפשר לנפק לפקודה חומרים ולדווח עליה.',
+ grp:'פקודה שייכת לארגון אחד.',
+ mod:'WIP',path:'Discrete > Discrete Jobs',rel:['wip-material','move-transactions','completions','view-jobs']},
+{id:'wip-material',g:'wip',en:'WIP Material Transactions',he:'ניפוק חומרים לפקודה',k:'daily',who:'מחסנאי',
+ one:'מוציאים רכיבים מהמחסן לפקודת העבודה, או מחזירים אותם.',
+ what:'משמש לרכיבים שמנופקים ידנית. רכיבים שהוגדרו לניפוק אוטומטי יוצאים מהמלאי לבד, בזמן דיווח הייצור, ולא צריך לנפק אותם כאן.',
+ when:'לפני שמתחילים לייצר, או כשחסר חומר באמצע.',
+ steps:['בוחרים פקודה.','בוחרים סוג תנועה: ניפוק או החזרה.','בוחרים רכיבים, מחסן וכמות.'],
+ after:'היתרה במחסן יורדת, והחומר נרשם על הפקודה.',
+ mod:'WIP',path:'Material Transactions > WIP Material Transactions',rel:['discrete-jobs','move-transactions']},
+{id:'move-transactions',g:'wip',en:'Move Transactions',he:'דיווח התקדמות',k:'daily',who:'עובד ייצור, מנהל עבודה',
+ one:'מדווחים שהעבודה התקדמה מפעולה לפעולה.',
+ what:'מעבירים כמות מפעולה אחת במסלול לבאה. הדיווח יכול לחייב אוטומטית את שעות העבודה, ולנפק רכיבים שהוגדרו לניפוק אוטומטי.',
+ when:'בכל פעם שכמות מסיימת תחנה ועוברת לבאה.',
+ steps:['בוחרים פקודה.','בוחרים מאיזו פעולה ולאיזו פעולה.','מקלידים כמות.'],
+ after:'המערכת יודעת איפה הפקודה נמצאת על הרצפה.',
+ mod:'WIP',path:'Move Transactions > Move Transactions',rel:['discrete-jobs','resource-transactions','completions']},
+{id:'resource-transactions',g:'wip',en:'Resource Transactions',he:'דיווח שעות ומשאבים',k:'daily',who:'מנהל עבודה',
+ one:'מדווחים ידנית שעות עבודה או שימוש במכונה על פקודה.',
+ what:'משמש למשאבים שהוגדרו לחיוב ידני. משאבים בחיוב אוטומטי מחויבים לבד, בזמן דיווח ההתקדמות.',
+ when:'כשרוצים לרשום את השעות שהושקעו בפועל.',
+ steps:['בוחרים פקודה ופעולה.','בוחרים משאב.','מקלידים כמה שעות או יחידות.'],
+ after:'עלות המשאב נרשמת על הפקודה.',
+ mod:'WIP',path:'Resource Transactions > Resource Transactions',rel:['resources','move-transactions']},
+{id:'completions',g:'wip',en:'Completion Transactions',he:'דיווח גמר',k:'daily',who:'עובד ייצור, מחסנאי',
+ one:'מכניסים את המוצר המוגמר למלאי.',
+ what:'מדווחים כמה יחידות הושלמו. המוצר נכנס למחסן. רכיבים שהוגדרו לניפוק בזמן גמר (`Assembly Pull`) יוצאים מהמלאי באותו רגע.',
+ when:'כשהייצור של כמות הסתיים.',
+ steps:['בוחרים פקודה.','מקלידים כמה הושלם.','בוחרים לאיזה מחסן המוצר נכנס.'],
+ after:'יתרת המוצר המוגמר עולה. כשכל הכמות הושלמה, הפקודה עוברת לבד למצב `Complete`.',
+ mod:'WIP',path:'Material Transactions > Completion Transactions',rel:['discrete-jobs','close-jobs','material-workbench']},
+{id:'view-jobs',g:'wip',en:'View Discrete Jobs',he:'צפייה בפקודות',k:'view',who:'מנהל ייצור, מתכנן',
+ one:'רואים את מצב הפקודות: מה נפתח, מה בעבודה ומה חסר.',
+ what:'מאתרים פקודות ורואים כמויות, תאריכים וסטטוס. במסכים קרובים רואים את דרישות החומרים ואת הפעולות של כל פקודה.',
+ when:'במעקב יומי אחרי הייצור.',
+ steps:['מסננים לפי פקודה, מכלול, סטטוס או תאריכים.','פותחים פקודה כדי לראות את פרטיה.','עוברים לרשימת הרכיבים או לרשימת הפעולות.'],
+ after:'מסכי בירור בלבד.',
+ mod:'WIP',paths:[['View Discrete Jobs','Discrete > View Discrete Jobs'],['View Material Requirements','Job/Schedule Details > View Material Requirements'],['View Operations','Job/Schedule Details > View Operations']],rel:['discrete-jobs'],
+ v:'תיאור המסכים נכתב מהיכרות כללית. שמות המסכים והנתיבים אומתו.'},
+{id:'close-jobs',g:'wip',en:'Close Discrete Jobs',he:'סגירת פקודות',k:'period',who:'כספים, מנהל ייצור',
+ one:'סוגרים פקודות שהסתיימו.',
+ what:'הסגירה מסיימת את חיי הפקודה. אי אפשר לסגור פקודה שיש לה תנועות שעוד לא עובדו.',
+ when:'באופן קבוע, בדרך כלל לקראת סוף החודש.',
+ steps:['מאתרים פקודות שהושלמו.','בודקים שאין להן תנועות שלא עובדו.','מריצים סגירה.'],
+ after:'פקודה סגורה אי אפשר לעדכן עוד.',
+ tip:'בתמחיר תקן, הסטיות של הפקודה נרשמות בזמן הסגירה. לכן פקודות שלא נסגרות מעוותות את התמונה הכספית.',
+ mod:'WIP',path:'Discrete > Close Discrete Jobs',rel:['completions','accounting-periods'],
+ v:'מועד רישום הסטיות בתמחיר תקן לא נבדק מול המדריך.'},
+
+/* ---------- plan ---------- */
+{id:'min-max',g:'plan',en:'Min-Max Planning',he:'תכנון Min-Max',k:'daily',who:'מתכנן',
+ one:'מילוי מלאי פשוט: כשיורדים מתחת למינימום, מזמינים עד למקסימום.',
+ what:'זהו דוח שמריצים. לכל פריט הוא בודק אם המלאי, יחד עם מה שכבר בהזמנה, ירד מתחת למינימום. אם כן, הוא מציע להזמין את ההפרש עד המקסימום, ויכול גם ליצור את ההזמנה.',
+ when:'בתזמון קבוע, לפריטים פשוטים שלא מצדיקים תכנון מלא.',
+ steps:['בוחרים אם לתכנן את כל הארגון או מחסן משנה אחד.','קובעים עד איזה תאריך להתחשב בדרישות ובאספקות.','בוחרים אם ליצור הזמנות בפועל (`Restock`) או להפיק דוח בלבד.'],
+ after:'ברמת הארגון נוצרות דרישות רכש לפריטים קנויים ופקודות עבודה לפריטים מיוצרים.',
+ grp:'כל ארגון מריץ לעצמו, לפי המינימום והמקסימום שהוא קבע לפריט.',
+ tip:'שיטה קרובה, `Reorder Point Planning`, מזמינה לפי נקודת הזמנה שהמערכת מחשבת.',
+ mod:'INV',paths:[['Min-Max Planning','Planning > Min-Max Planning'],['Reorder Point Planning','Planning > Reorder Point Planning']],rel:['organization-items','move-orders','launch-mrp']},
+{id:'planners',g:'plan',en:'Planners',he:'מתכננים',k:'setup',who:'מיישם',
+ one:'רשימת האנשים שאחראים על תכנון הפריטים.',
+ what:'מגדירים קוד לכל מתכנן. אחר כך משייכים כל פריט למתכנן, וכך אפשר לסנן הצעות תכנון ודוחות לפי מתכנן.',
+ when:'בהקמה, וכשמצטרף מתכנן חדש.',
+ steps:['מקלידים קוד ותיאור למתכנן.','משייכים את המתכנן לפריטים, במסך הפריט.'],
+ after:'אפשר לבחור את המתכנן בפריטים.',
+ grp:'בפריט, המתכנן נקבע תמיד ברמת הארגון. לכל חברה מתכננים משלה.',
+ mod:'INV',path:'Setup > Planners',rel:['organization-items','planner-workbench'],
+ v:'תיאור המסך נכתב מהיכרות כללית. הנתיב אומת, והמסך מתועד במדריך ה-MRP.'},
+{id:'planning-parameters',g:'plan',en:'Planning Parameters',he:'הגדרות תכנון',k:'setup',who:'מיישם',
+ one:'ברירות המחדל של ריצות התכנון בארגון.',
+ what:'במסך מפעילים את יכולות התכנון, וקובעים אפשרויות ריצה וערכי ברירת מחדל שמשפיעים על שאר מסכי התכנון.',
+ when:'פעם אחת, בהקמה.',
+ steps:['עוברים על האפשרויות.','קובעים את ברירות המחדל של הריצה.'],
+ after:'תוכניות חדשות מקבלות את ברירות המחדל האלה.',
+ mod:'MRP',path:'Setup > Parameters',rel:['mrp-names','launch-mrp']},
+{id:'forecasts',g:'plan',en:'Forecast Sets / Item Forecast Entries',he:'תחזיות',k:'period',who:'מתכנן, מכירות',
+ one:'מקלידים כמה צפוי להימכר מכל מוצר, ומתי.',
+ what:'תחזית היא הערכה של הביקוש העתידי. תחזיות מקובצות בסט, למשל תחזית נפרדת לכל אזור. כשמגיעות הזמנות לקוח בפועל, הן מחליפות את התחזית ולא מתווספות אליה.',
+ when:'בכל מחזור תכנון.',
+ steps:['מגדירים סט תחזיות, ותחזית בתוכו.','מוסיפים פריטים, תאריכים וכמויות.'],
+ after:'התחזית מוכנה להיטען לתוכנית הדרישות.',
+ mod:'MRP',paths:[['Forecast Sets','Forecast > Sets'],['Item Forecast Entries','Forecast > Entries']],rel:['mds']},
+{id:'mds',g:'plan',en:'Master Demand Schedules',he:'תוכנית דרישות (MDS)',k:'period',who:'מתכנן',
+ one:'ריכוז כל הדרישות למוצרים: תחזיות והזמנות.',
+ what:'תוכנית הדרישות אומרת מה צריך לספק, כמה ומתי. היא נקודת הפתיחה של ריצת התכנון. טוענים אליה תחזיות והזמנות, ואפשר גם להקליד שורות ידנית.',
+ when:'לפני כל ריצת תכנון.',
+ steps:['מגדירים שם לתוכנית.','טוענים אליה תחזיות והזמנות לקוח.','בודקים ומתקנים שורות.'],
+ after:'ריצת התכנון מחשבת מה צריך לייצר ולקנות כדי לעמוד בתוכנית.',
+ mod:'MRP',paths:[['Master Demand Schedules','MDS > Names'],['Load/Copy/Merge Master Demand Schedule','MDS > Load/Copy/Merge'],['Master Demand Schedule Items','MDS > Items']],rel:['forecasts','mrp-names','launch-mrp'],
+ v:'הנתיב MDS > Names לא אומת ישירות מול נספח הניווט של המדריך. שני הנתיבים האחרים אומתו.'},
+{id:'mrp-names',g:'plan',en:'MRP Names / Plan Options',he:'תוכניות MRP ואפשרויות',k:'setup',who:'מתכנן, מיישם',
+ one:'מגדירים תוכנית MRP, וקובעים איך היא תרוץ.',
+ what:'נותנים שם לתוכנית. אפשר להחזיק כמה תוכניות, למשל אחת אמיתית ואחת לסימולציה. באפשרויות קובעים במה הריצה מתחשבת.',
+ when:'בהקמה, ולפני ריצה כשרוצים לשנות אפשרויות.',
+ steps:['נותנים לתוכנית שם.','פותחים את האפשרויות.','קובעים אם להתחשב בפקודות עבודה, ברכש פתוח, בשריונים ובמלאי ביטחון.'],
+ after:'אפשר להריץ את התוכנית.',
+ mod:'MRP',paths:[['MRP Names','MRP > Names'],['Plan Options','MRP > Options']],rel:['mds','launch-mrp','planning-parameters']},
+{id:'launch-mrp',g:'plan',en:'Launch MRP',he:'הרצת התכנון',k:'period',who:'מתכנן',
+ one:'מפעילים את החישוב שקובע מה לייצר ומה לקנות, כמה ומתי.',
+ what:'הריצה לוקחת את הדרישות, את המלאי, את ההזמנות הפתוחות, את עצי המוצר ואת זמני האספקה, ומפיקה המלצות: הזמנות מתוכננות חדשות, ושינויים בהזמנות קיימות.',
+ when:'בתזמון קבוע, למשל כל לילה או כל שבוע.',
+ steps:['בוחרים את שם התוכנית.','בודקים את האפשרויות.','שולחים את הריצה לביצוע ברקע.'],
+ after:'ההמלצות ממתינות למתכנן בשולחן המתכנן.',
+ grp:'ריצת MRP רגילה מתכננת ארגון אחד. תכנון משותף לכמה ארגונים הוא נושא מתקדם יותר (`Supply Chain Planning`).',
+ mod:'MRP',path:'MRP > Launch',rel:['mrp-names','planner-workbench','mds']},
+{id:'planner-workbench',g:'plan',en:'Planner Workbench',he:'שולחן המתכנן',k:'daily',who:'מתכנן',
+ one:'המתכנן בוחן את המלצות התכנון, ומחליט מה לשחרר.',
+ what:'המסך מציג את ההמלצות של ריצת התכנון. המתכנן בוחר אילו מהן לממש, כהזמנות חדשות או כשינוי בהזמנות קיימות, ומשחרר אותן.',
+ when:'אחרי כל ריצת תכנון.',
+ steps:['בוחרים תוכנית.','עוברים על ההמלצות.','מסמנים המלצות למימוש, ומשחררים.'],
+ after:'נוצרות פקודות עבודה במודול הייצור ודרישות רכש במודול הרכש.',
+ mod:'MRP',path:'MRP > Workbench',rel:['launch-mrp','discrete-jobs','supply-demand']}
+];
+const BY={}; SCREENS.forEach(s=>BY[s.id]=s);
+
+const TASKS=[
+ ['להקים חברה בת חדשה במערכת','organizations'],
+ ['להקים פריט חדש','master-items'],
+ ['לשנות נתון של פריט רק בחברה אחת','organization-items'],
+ ['לקבוע מה אחיד בקבוצה ומה כל חברה קובעת','attribute-controls'],
+ ['לקלוט סחורה שהגיעה','receipts'],
+ ['להעביר מלאי ממחסן למחסן','subinventory-transfer'],
+ ['להעביר מלאי לחברה אחרת בקבוצה','interorg-transfer'],
+ ['לבדוק כמה יש במלאי, ואיפה','material-workbench'],
+ ['להבין למה יתרה השתנתה','material-transactions'],
+ ['לספור מלאי','cycle-count-entries'],
+ ['לבנות עץ מוצר','bills'],
+ ['להגדיר איך מייצרים מוצר','routings'],
+ ['לפתוח פקודת עבודה','discrete-jobs'],
+ ['לנפק חומרים לפקודה','wip-material'],
+ ['לדווח שהייצור הסתיים','completions'],
+ ['לדעת מה לקנות ומה לייצר','planner-workbench'],
+ ['לסגור את החודש','accounting-periods']
+];
+
+const FLOWS=[
+ {t:'חברה בת חדשה נכנסת למערכת',d:'מה מגדירים, ובאיזה סדר, כדי שחברה חדשה בקבוצה תוכל לנהל מלאי.',s:[
+  ['workday-calendar','מוודאים שיש לוח ימי עבודה שמתאים לחברה.'],
+  ['organizations','מקימים את הארגון.'],
+  ['org-parameters','קובעים את כללי העבודה, ובראשם ארגון האב לפריטים.'],
+  ['subinventories','מגדירים את המחסנים.'],
+  ['stock-locators','מוסיפים איתורים, אם עובדים איתם.'],
+  ['shipping-networks','מחברים את החברה לשאר חברות הקבוצה.'],
+  ['master-items','משייכים לחברה את הפריטים שהיא צריכה.'],
+  ['accounting-periods','פותחים תקופה חשבונאית, כדי שאפשר יהיה לבצע תנועות.']]},
+ {t:'פריט חדש, מההקמה ועד שהוא מוכן',d:'הדרך של פריט מהרגע שמחליטים עליו ועד שכל חברה יכולה לעבוד איתו.',s:[
+  ['attribute-controls','החלטה חד-פעמית שכבר התקבלה: מה אחיד בקבוצה ומה לא.'],
+  ['item-templates','בוחרים תבנית שמתאימה לסוג הפריט.'],
+  ['master-items','מקימים את הפריט בארגון האב ומשייכים אותו לחברות.'],
+  ['organization-items','כל חברה משלימה את הנתונים שלה.'],
+  ['categories','מסווגים את הפריט.']]},
+ {t:'ממוצר חדש ועד מוצר על המדף',d:'מההגדרות ההנדסיות, דרך פקודת העבודה, ועד שהמוצר נכנס למלאי.',s:[
+  ['bills','מגדירים ממה המוצר מורכב.'],
+  ['resources','מוודאים שהעובדים והמכונות מוגדרים.'],
+  ['departments','מוודאים שהמחלקות מוגדרות.'],
+  ['routings','מגדירים איך מייצרים את המוצר.'],
+  ['lead-times','מחשבים כמה זמן הייצור לוקח.'],
+  ['discrete-jobs','פותחים פקודת עבודה ומשחררים אותה.'],
+  ['wip-material','מנפקים חומרים.'],
+  ['move-transactions','מדווחים התקדמות בין הפעולות.'],
+  ['completions','מדווחים גמר, והמוצר נכנס למלאי.'],
+  ['close-jobs','סוגרים את הפקודה.']]},
+ {t:'מחזור התכנון',d:'מהתחזית ועד פקודות עבודה ודרישות רכש.',s:[
+  ['forecasts','מעדכנים את התחזית.'],
+  ['mds','טוענים תחזיות והזמנות לתוכנית הדרישות.'],
+  ['mrp-names','בודקים את אפשרויות התוכנית.'],
+  ['launch-mrp','מריצים את התכנון.'],
+  ['planner-workbench','המתכנן בוחן את ההמלצות ומשחרר.'],
+  ['discrete-jobs','ההמלצות ששוחררו הופכות לפקודות עבודה ולדרישות רכש.']]},
+ {t:'סגירת חודש',d:'הצעדים שמסיימים תקופה במלאי ובייצור.',s:[
+  ['accounting-periods','פותחים את התקופה הבאה, כדי שהעבודה לא תיעצר.'],
+  ['cycle-count-entries','משלימים ספירות ומאשרים הפרשים.'],
+  ['close-jobs','סוגרים פקודות עבודה שהסתיימו.'],
+  ['accounting-periods','בודקים תנועות שלא עובדו, וסוגרים את התקופה.']]}
+];
+
+/* ---------- state ---------- */
+const KEY='ebsScreens.v1';
+let READ={};
+try{const r=localStorage.getItem(KEY); if(r){const o=JSON.parse(r); if(o&&typeof o==='object') READ=o;}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(READ));}catch(e){} drawProg();}
+function drawProg(){const n=SCREENS.filter(s=>READ[s.id]).length; $('#prog').textContent=n?n+' מתוך '+SCREENS.length+' מסכים סומנו':SCREENS.length+' מסכים';}
+const TRAINER=/oracle-ebs-screens\.html$/.test(location.pathname)?'oracle-ebs-trainer.html':'https://claude.ai/artifact/HifSA3WWPpG6MNdnKR6xJM';
+
+/* ---------- views ---------- */
+const main=$('#main');
+const kchip=k=>`<span class="k ${k}">${KINDS[k][0]}</span>`;
+const card=s=>`<a class="scr" href="#s-${s.id}"><span class="scr-h"><b>${esc(s.he)}</b>${READ[s.id]?'<span class="ok" title="סומן כמובן">✓</span>':kchip(s.k)}</span><span class="en" dir="ltr">${esc(s.en)}</span><p>${fmt(s.one)}</p></a>`;
+let query='';
+function vHome(){
+  main.innerHTML=`<div class="view">
+   <section class="stack">
+    <h1>כל מסך, במילים פשוטות</h1>
+    <p class="lead">${SCREENS.length} המסכים המרכזיים של מלאי ותפ"י ב-Oracle EBS. לכל מסך: מה הוא עושה, מתי פותחים אותו, מה עושים בו ומה קורה אחר כך.</p>
+    <input id="q" class="search" type="search" placeholder="חיפוש מסך, בעברית או באנגלית" aria-label="חיפוש מסך" value="${esc(query)}">
+    <div id="res" aria-live="polite"></div>
+   </section>
+   <div id="rest" class="view"></div>
+  </div>`;
+  $('#q').oninput=e=>{query=e.target.value.trim(); drawHome();};
+  drawHome();
+}
+function drawHome(){
+  const res=$('#res'), rest=$('#rest');
+  if(query.length>=2){
+    const lq=query.toLowerCase();
+    const hits=SCREENS.filter(s=>{
+      const hay=[s.en,s.he,s.one,s.what].concat((s.paths||[]).map(p=>p[0])).join(' ');
+      return hay.toLowerCase().indexOf(lq)>=0;
+    });
+    res.innerHTML=hits.length?`<p class="small muted">${hits.length} מסכים נמצאו</p><div class="grid">${hits.map(card).join('')}</div>`:'<p class="muted">לא נמצא מסך כזה במדריך. נסו מילה אחרת, או את שם המסך באנגלית.</p>';
+    rest.hidden=true; return;
+  }
+  res.innerHTML=''; rest.hidden=false;
+  rest.innerHTML=`
+   <section class="stack">
+    <h2>מה רוצים לעשות?</h2>
+    <ul class="tasks">${TASKS.map(t=>`<li><a href="#s-${t[1]}"><span>${esc(t[0])}</span><span class="en" dir="ltr">${esc(BY[t[1]].en)}</span></a></li>`).join('')}</ul>
+   </section>
+   <section class="stack">
+    <h2>כל המסכים, לפי תחום</h2>
+    <p class="legend">${Object.keys(KINDS).map(k=>`<span>${kchip(k)} ${KINDS[k][1]}</span>`).join('')}</p>
+   </section>
+   ${GROUPS.map(g=>{const list=SCREENS.filter(s=>s.g===g[0]);return `<section class="stack" id="g-${g[0]}">
+     <div class="group-h"><h2>${esc(g[1])}</h2><span class="small muted">${list.length} מסכים</span></div>
+     <p class="muted">${esc(g[2])}</p>
+     <div class="grid">${list.map(card).join('')}</div></section>`;}).join('')}
+   <section class="stack">
+    <h2>רוצים לרדת לרמת השדה?</h2>
+    <p class="lead">המדריך הזה מסביר מסכים. האפליקציה השנייה, <a href="${TRAINER}" target="_blank" rel="noopener">מאמן המיישם</a>, מסבירה כל שדה וכל רשימת ערכים, ומתרגלת את ההורשה בין חברת האם לחברות הבנות.</p>
+   </section>`;
+}
+function crumbs(p){return `<p class="crumbs">${p.split('>').map(x=>`<span>${esc(x.trim())}</span>`).join('<i>›</i>')}</p>`;}
+function vScreen(s){
+  const list=SCREENS.filter(x=>x.g===s.g), i=list.indexOf(s), prev=list[i-1], next=list[i+1];
+  const g=GROUPS.find(x=>x[0]===s.g);
+  const paths=s.paths?s.paths:[[s.en,s.path]];
+  main.innerHTML=`<div class="view">
+   <a class="back" href="#home">‹ כל המסכים</a>
+   <div class="win">
+    <div class="win-t"><span>${esc(s.en)}</span><i></i></div>
+    <div class="win-b">
+     <h1>${esc(s.he)}</h1>
+     <p class="one">${fmt(s.one)}</p>
+     <p class="meta">${kchip(s.k)}<span>${KINDS[s.k][1]}</span><span>מי עובד במסך: ${esc(s.who)}</span><span>תחום: ${esc(g[1])}</span></p>
+    </div>
+   </div>
+   <section class="sec"><h2>מה המסך עושה</h2><p>${fmt(s.what)}</p></section>
+   <section class="sec"><h2>מתי פותחים אותו</h2><p>${fmt(s.when)}</p></section>
+   <section class="sec"><h2>מה עושים בו</h2><ol>${s.steps.map(x=>`<li>${fmt(x)}</li>`).join('')}</ol></section>
+   <section class="sec"><h2>מה קורה אחר כך</h2><p>${fmt(s.after)}</p></section>
+   ${s.grp?`<section class="box grp"><h2>בקבוצת חברות</h2><p>${fmt(s.grp)}</p></section>`:''}
+   ${s.tip?`<section class="box tip"><h2>כדאי לדעת</h2><p>${fmt(s.tip)}</p></section>`:''}
+   <section class="sec"><h2>איפה בתפריט</h2>
+    <p class="small muted">מודול: ${esc(MODS[s.mod])}. הנתיב לפי מדריך המשתמש. התפריט אצלכם תלוי בהרשאות שהוגדרו לכם.</p>
+    <div class="paths">${paths.map(p=>`<div>${paths.length>1?`<span class="en small" dir="ltr">${esc(p[0])}</span>`:''}${crumbs(p[1])}</div>`).join('')}</div>
+   </section>
+   ${s.v?`<section class="box v"><p><b>לאמת:</b> ${fmt(s.v)}</p></section>`:''}
+   <section class="sec"><h2>מסכים קשורים</h2><div class="rel">${(s.rel||[]).map(id=>`<a href="#s-${id}">${esc(BY[id].he)}</a>`).join('')}</div></section>
+   <div class="foot">
+    <button class="btn" id="mark" aria-pressed="${!!READ[s.id]}">${READ[s.id]?'✓ סומן שהבנתי':'הבנתי את המסך'}</button>
+    <span class="pn">${prev?`<a href="#s-${prev.id}">‹ ${esc(prev.he)}</a>`:''}${next?`<a href="#s-${next.id}">${esc(next.he)} ›</a>`:''}</span>
+   </div>
+  </div>`;
+  $('#mark').onclick=()=>{ if(READ[s.id]) delete READ[s.id]; else READ[s.id]=1; save(); vScreen(s); };
+}
+function vFlows(){
+  main.innerHTML=`<div class="view">
+   <section class="stack"><h1>תהליכים</h1>
+    <p class="lead">מסך לבדו לא מספר את כל הסיפור. כאן רואים איך המסכים מתחברים לתהליך שלם, צעד אחרי צעד.</p></section>
+   ${FLOWS.map(f=>`<section class="flow"><h2>${esc(f.t)}</h2><p class="muted">${esc(f.d)}</p>
+     <ol>${f.s.map(x=>`<li><div><a href="#s-${x[0]}">${esc(BY[x[0]].he)}</a> <span class="en small muted" dir="ltr">${esc(BY[x[0]].en)}</span><br>${esc(x[1])}</div></li>`).join('')}</ol></section>`).join('')}
+  </div>`;
+}
+function vAbout(){
+  const flagged=SCREENS.filter(s=>s.v).length;
+  main.innerHTML=`<div class="view">
+   <section class="prose"><h1>דיוק ומקורות</h1>
+    <p>המדריך נבנה ללימוד עצמי של ${en('Oracle E-Business Suite R12')}, הגרסה שעובדת עם מסכי Forms. הוא אינו מוצר רשמי של Oracle, ואינו מחליף את התיעוד הרשמי או את המערכת שלכם.</p></section>
+   <section class="prose"><h2>מה נבדק</h2>
+    <p>שמות המסכים ונתיבי התפריט נלקחו מנספחי הניווט של מדריכי המשתמש הרשמיים של גרסה 12.2, בנובמבר 2026. גם ההסבר על מה שכל מסך עושה נבדק מול אותם מדריכים, ברוב המסכים.</p>
+    <ul>
+     <li>${en("Oracle Inventory User's Guide")} (${en('E48820')})</li>
+     <li>${en("Oracle Bills of Material User's Guide")} (${en('E48954')})</li>
+     <li>${en("Oracle Work in Process User's Guide")} (${en('E48905')})</li>
+     <li>${en("Oracle MRP User's Guide")} (${en('E48795')})</li>
+    </ul>
+    <p>ספריית התיעוד של גרסה 12.2: <a href="https://docs.oracle.com/cd/E26401_01/index.htm" target="_blank" rel="noopener">docs.oracle.com/cd/E26401_01</a></p></section>
+   <section class="prose"><h2>מה לא נבדק</h2>
+    <ul>
+     <li>ב-${flagged} מתוך ${SCREENS.length} המסכים מופיעה הערת "לאמת", שמסבירה מה בדיוק לא נבדק.</li>
+     <li>הצעדים שבסעיף "מה עושים בו" הם סיכום פשוט שלי, ולא רשימת שדות מדויקת. במסך האמיתי יש בדרך כלל שדות ואפשרויות נוספים.</li>
+     <li>העמודה "מי עובד במסך" מתארת חלוקת תפקידים טיפוסית. אצלכם היא עשויה להיות שונה.</li>
+     <li>המערכת שלכם עצמה: גרסה מדויקת, התאמות מקומיות, תרגום לעברית והרשאות.</li>
+    </ul></section>
+   <section class="prose"><h2>הסימונים שלכם</h2>
+    <p>הסימון "הבנתי את המסך" נשמר בדפדפן הזה בלבד. הוא לא עובר למכשיר אחר, ועלול להימחק אם מנקים את נתוני הדפדפן.</p>
+    <div id="reset-box"><button class="btn" id="reset">ניקוי הסימונים</button></div></section>
+  </div>`;
+  $('#reset').onclick=()=>{
+    $('#reset-box').innerHTML='<span>לנקות את כל הסימונים?</span> <button class="btn" id="ry">כן, לנקות</button> <button class="btn" id="rn" aria-pressed="true">ביטול</button>';
+    $('#ry').onclick=()=>{READ={}; save(); vAbout();};
+    $('#rn').onclick=vAbout;
+  };
+}
+function route(){
+  const h=(location.hash||'').replace('#','');
+  let tab='home';
+  if(h==='flows'){tab='flows'; vFlows();}
+  else if(h==='about'){tab='about'; vAbout();}
+  else if(h.indexOf('s-')===0&&BY[h.slice(2)]){vScreen(BY[h.slice(2)]);}
+  else vHome();
+  $$('#nav a').forEach(a=>{ if(a.getAttribute('href')==='#'+tab) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+drawProg(); route();
+})();
+</script>
+</body>
+</html>
