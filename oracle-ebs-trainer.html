@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>מאמן מיישם Oracle EBS</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=Rubik:wght@500;700&display=swap">
+<style>
+/* Layout: sticky title bar with folder-tab navigation, one reading column (max 940px).
+   The Oracle Forms mock is an LTR "window" set inside the RTL Hebrew page.
+   Master = indigo and Org = amber wherever the two control levels appear. */
+:root{
+  --bg:#ECEFF4; --panel:#FFFFFF; --panel-2:#F3F5F9; --chrome:#DCE2EB; --shade:#C9D1DD;
+  --title:#22304A; --title-ink:#F2F5FA;
+  --ink:#162032; --ink-2:#4A576C; --line:#C3CBD8;
+  --accent:#0B6B6B; --accent-ink:#FFFFFF; --accent-bg:#DDF0EF;
+  --master:#3545A8; --master-bg:#E3E6F8; --org:#9A4D0A; --org-bg:#FBEAD6;
+  --req:#FFF3B0; --good:#1A7A48; --good-bg:#DCF2E5; --bad:#B3261E; --bad-bg:#FBE0DD;
+  --flag:#7D5200; --flag-bg:#FBF0CF;
+  --font-display:'Rubik','Arial Hebrew','Segoe UI',Arial,sans-serif;
+  --font-body:'IBM Plex Sans Hebrew','Arial Hebrew','Segoe UI',Arial,sans-serif;
+  --font-mono:'IBM Plex Mono',Consolas,'Courier New',monospace;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F141C; --panel:#18202B; --panel-2:#1D2633; --chrome:#263243; --shade:#111821;
+  --title:#1B2535; --title-ink:#E7ECF3;
+  --ink:#E7ECF3; --ink-2:#A3B0C2; --line:#35435A;
+  --accent:#4CC2BF; --accent-ink:#06201F; --accent-bg:#123635;
+  --master:#A3AEFF; --master-bg:#272E58; --org:#F2A65A; --org-bg:#45301B;
+  --req:#4F4619; --good:#6AD39A; --good-bg:#173A29; --bad:#FF8A80; --bad-bg:#4A1F1C;
+  --flag:#E5B85C; --flag-bg:#3D3115; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0F141C; --panel:#18202B; --panel-2:#1D2633; --chrome:#263243; --shade:#111821;
+  --title:#1B2535; --title-ink:#E7ECF3;
+  --ink:#E7ECF3; --ink-2:#A3B0C2; --line:#35435A;
+  --accent:#4CC2BF; --accent-ink:#06201F; --accent-bg:#123635;
+  --master:#A3AEFF; --master-bg:#272E58; --org:#F2A65A; --org-bg:#45301B;
+  --req:#4F4619; --good:#6AD39A; --good-bg:#173A29; --bad:#FF8A80; --bad-bg:#4A1F1C;
+  --flag:#E5B85C; --flag-bg:#3D3115; color-scheme:dark }
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--font-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--title)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.25;text-wrap:balance;margin:0}
+h1{font-size:1.6rem} h2{font-size:1.2rem} h3{font-size:1.02rem}
+p{margin:0}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.en{font-family:var(--font-mono);font-size:.9em;unicode-bidi:isolate}
+.muted{color:var(--ink-2)}
+.small{font-size:.86rem}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--title);color:var(--title-ink)}
+.top-in{max-width:940px;margin:0 auto;padding-block:10px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.brand b{font-family:var(--font-display);font-size:1.05rem;font-weight:700}
+.brand span{font-size:.8rem;opacity:.85;white-space:nowrap}
+.nav{display:flex;gap:2px;overflow-x:auto;margin-top:8px;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:none;padding:7px 13px;color:inherit;text-decoration:none;font-size:.92rem;border-radius:6px 6px 0 0;opacity:.82}
+.nav a:hover{opacity:1}
+.nav a[aria-current="page"]{background:var(--bg);color:var(--ink);opacity:1;font-weight:600}
+main{max-width:940px;margin:0 auto;padding-block:22px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.view{display:grid;gap:22px;min-width:0}
+.view>*{min-width:0}
+.lead{max-width:65ch;color:var(--ink-2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
+.stack{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.stack>*{min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row>*{min-width:0}
+.row>select{flex:1 1 240px}
+.row>input[type=search]{flex:1 1 200px}
+
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:8px 16px;font-weight:600}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
+.btn.sm{padding:4px 10px;font-size:.86rem}
+select,input[type=search],input[type=text]{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px;min-width:0;max-width:100%}
+
+.b{display:inline-block;font:500 .72rem/1.5 var(--font-mono);padding:0 6px;border-radius:4px;white-space:nowrap}
+.b.m{background:var(--master-bg);color:var(--master)}
+.b.o{background:var(--org-bg);color:var(--org)}
+.b.g{background:var(--accent-bg);color:var(--accent)}
+.b.f{background:var(--flag-bg);color:var(--flag);font-family:var(--font-body)}
+
+/* ---------- home ---------- */
+.hero h1{margin-bottom:6px}
+.path{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:st}
+.path li{counter-increment:st;display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.path li:last-child{border-bottom:1px solid var(--line)}
+.path li::before{content:counter(st);font:500 1rem var(--font-mono);color:var(--ink-2);text-align:center}
+.path h3{margin-bottom:2px}
+.bar{height:5px;background:var(--chrome);border-radius:3px;overflow:hidden;margin-top:7px;max-width:260px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel)}
+.stat b{display:block;font:700 1.35rem var(--font-display);font-variant-numeric:tabular-nums}
+.conv{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.conv li{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;align-items:start}
+.key{font:500 .78rem/1.6 var(--font-mono);background:var(--chrome);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;text-align:center;direction:ltr}
+.key.y{background:var(--req)}
+
+/* ---------- forms window ---------- */
+.fw{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--chrome)}
+.fw-title{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--title);color:var(--title-ink);padding:6px 10px;font:500 .8rem var(--font-mono);direction:ltr}
+.fw-title i{display:flex;gap:4px;flex:none}
+.fw-title i::before,.fw-title i::after{content:"";width:9px;height:9px;border:1px solid currentColor;opacity:.6}
+.fw-tabs{display:flex;gap:2px;padding:8px 8px 0;overflow-x:auto;direction:ltr}
+.fw-tabs button{flex:none;border:1px solid var(--line);border-bottom:0;background:transparent;padding:5px 10px;border-radius:5px 5px 0 0;font:500 .78rem var(--font-mono);color:var(--ink-2)}
+.fw-tabs button[aria-selected="true"]{background:var(--panel-2);color:var(--ink)}
+.fw-body{background:var(--panel-2);margin:0 8px;border:1px solid var(--line);padding:10px;display:grid;gap:3px}
+.fw-status{direction:ltr;font:400 .72rem var(--font-mono);color:var(--ink-2);padding:5px 10px;display:flex;gap:18px;min-height:26px}
+.fr{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:8px;align-items:center;direction:ltr;width:100%;background:none;border:0;padding:3px 4px;border-radius:4px;text-align:left}
+.fr:hover,.fr[aria-expanded="true"]{background:var(--chrome)}
+.fl{font:500 .8rem/1.35 var(--font-mono);text-align:right;overflow-wrap:anywhere}
+.fl.seen::before{content:"✓ ";color:var(--good)}
+.fc{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:28px;background:var(--panel);border:1px solid var(--line);padding:2px 8px;font:400 .8rem/1.35 var(--font-mono);box-shadow:inset 1px 1px 0 var(--shade);overflow-wrap:anywhere;min-width:0}
+.fc.req{background:var(--req)}
+.fc.c{background:none;border:0;box-shadow:none;justify-content:flex-start;padding-inline:0}
+.dots{flex:none;border:1px solid var(--line);background:var(--chrome);padding:0 5px;font-size:.7rem;line-height:16px}
+.chk{width:15px;height:15px;border:1px solid var(--ink-2);background:var(--panel);display:inline-grid;place-items:center;font-size:11px;line-height:1}
+.fd{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:2px 0 8px;display:grid;gap:8px}
+.fd-h{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lovl{margin:0;display:grid;gap:4px}
+.lovl div{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr);gap:10px;padding:4px 0;border-top:1px dashed var(--line)}
+.lovl dt{font:500 .8rem/1.5 var(--font-mono);direction:ltr;text-align:left;overflow-wrap:anywhere}
+.lovl dd{margin:0;font-size:.9rem}
+.tip{background:var(--accent-bg);border-radius:6px;padding:8px 10px;font-size:.92rem}
+.tip b{color:var(--accent)}
+.vnote{background:var(--flag-bg);color:var(--flag);border-radius:6px;padding:6px 10px;font-size:.86rem}
+.pathline{font:400 .8rem var(--font-mono);direction:ltr;text-align:right;color:var(--ink-2);overflow-wrap:anywhere}
+.results{display:grid;gap:4px}
+.results button{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px;text-align:start}
+
+/* ---------- inheritance ---------- */
+.levels{display:grid;gap:6px}
+.lvl{margin-inline-start:calc(var(--i)*13px);border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:8px 12px;display:grid;gap:2px}
+.lvl-h{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+.lvl-h b{font-family:var(--font-display)}
+.tree{display:grid;gap:0;justify-items:center}
+.tree-kids{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;position:relative;padding-top:18px}
+.tree-kids::before{content:"";position:absolute;top:8px;inset-inline:16.6%;border-top:2px solid var(--line)}
+.stem{width:2px;height:8px;background:var(--line)}
+.node{position:relative;width:100%;border:2px solid var(--line);border-radius:8px;background:var(--panel);padding:8px 6px;text-align:center;display:grid;gap:0;line-height:1.3}
+.tree-kids .node::before{content:"";position:absolute;top:-12px;inset-inline-start:50%;width:2px;height:10px;background:var(--line)}
+.node b{font:500 .95rem var(--font-mono)}
+.node span{font-size:.82rem}
+.node small{font-size:.72rem;color:var(--ink-2)}
+.node.m{max-width:220px;border-color:var(--master)}
+.node[aria-pressed="true"]{background:var(--accent-bg);border-color:var(--accent)}
+.node.off{border-style:dashed}
+.simrow{display:grid;gap:5px;padding:9px 0;border-top:1px solid var(--line)}
+.simrow-h{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.simrow-h label{font:500 .84rem var(--font-mono);direction:ltr}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex:none}
+.seg button{border:0;background:var(--panel);padding:2px 9px;font:500 .74rem var(--font-mono);color:var(--ink-2)}
+.seg button[aria-pressed="true"].sm-m{background:var(--master-bg);color:var(--master)}
+.seg button[aria-pressed="true"].sm-o{background:var(--org-bg);color:var(--org)}
+.simctl{width:100%;direction:ltr;font:400 .86rem var(--font-mono);background:var(--panel);border:1px solid var(--line);border-radius:0;padding:5px 8px;box-shadow:inset 1px 1px 0 var(--shade);text-align:left}
+.simctl.lock{background:var(--chrome);color:var(--ink-2);box-shadow:none}
+.vchips{display:flex;flex-wrap:wrap;gap:4px;direction:ltr;justify-content:flex-end}
+.vchip{font:400 .72rem/1.6 var(--font-mono);border:1px solid var(--line);border-radius:4px;padding:0 6px;background:var(--panel-2)}
+.vchip.diff{border-color:var(--org);color:var(--org)}
+.vchip.flash{animation:flash 1.1s ease-out}
+@keyframes flash{0%{background:var(--req)}100%{background:var(--panel-2)}}
+.log{min-height:3.2em;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:.92rem}
+.mis{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.mis li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:start}
+.mis .box{width:18px;height:18px;border:2px solid var(--ink-2);border-radius:4px;margin-top:4px;display:grid;place-items:center;font-size:12px;line-height:1}
+.mis li.done .box{background:var(--good);border-color:var(--good);color:var(--panel)}
+.mis li.done p{color:var(--ink-2)}
+.mis details{font-size:.86rem;color:var(--ink-2)}
+.shared{display:grid;gap:0}
+.shared div{display:grid;grid-template-columns:118px minmax(0,1fr);gap:12px;padding:9px 0;border-top:1px solid var(--line);align-items:start}
+.shared .b{margin-top:3px;text-align:center;font-family:var(--font-body);white-space:normal}
+
+/* ---------- practice ---------- */
+.subtabs{display:flex;gap:6px;flex-wrap:wrap}
+.subtabs button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 14px}
+.subtabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.match{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:8px;direction:ltr}
+.match>div{display:grid;gap:6px;align-content:start}
+.mi{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:8px 9px;min-height:44px;text-align:start;line-height:1.35}
+.mi.v{font:500 .82rem/1.35 var(--font-mono);direction:ltr;text-align:left;overflow-wrap:anywhere}
+.mi.h{direction:rtl;font-size:.9rem}
+.mi[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-bg)}
+.mi.ok{border-color:var(--good);background:var(--good-bg);color:var(--good);cursor:default}
+.mi.no{border-color:var(--bad);background:var(--bad-bg)}
+.fcard{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:22px 18px;min-height:230px;display:grid;gap:10px;align-content:center;text-align:center}
+.fcard .big{font:500 1.35rem/1.3 var(--font-mono);direction:ltr;overflow-wrap:anywhere}
+.fcard .back{text-align:start;display:grid;gap:8px}
+.boxes{display:flex;gap:6px;flex-wrap:wrap;font-size:.82rem;color:var(--ink-2)}
+.q-opts{display:grid;gap:8px}
+.q-opts button{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:10px 12px;text-align:start;line-height:1.45}
+.q-opts button.ok{border-color:var(--good);background:var(--good-bg)}
+.q-opts button.no{border-color:var(--bad);background:var(--bad-bg)}
+.q-opts button:disabled{cursor:default;opacity:1;color:var(--ink)}
+.q-text{font-size:1.08rem;font-weight:500;max-width:65ch}
+.q-text q{display:block;margin-top:6px;font-weight:400;color:var(--ink-2)}
+.q-exp{border-radius:8px;padding:10px 12px;background:var(--panel-2);border:1px solid var(--line)}
+.q-exp.ok{border-color:var(--good)} .q-exp.no{border-color:var(--bad)}
+
+/* ---------- glossary / about ---------- */
+.gl{display:grid;gap:0}
+.gl div{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr);gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+.gl dt{font:500 .86rem/1.5 var(--font-mono);direction:ltr;text-align:left;overflow-wrap:anywhere}
+.gl dd{margin:0}
+.gl dd b{font-weight:600}
+.prose{display:grid;gap:10px;max-width:68ch}
+.prose ul{margin:0;padding-inline-start:20px;display:grid;gap:4px}
+.toast{position:fixed;inset-inline:0;bottom:calc(18px + env(safe-area-inset-bottom,0px));margin-inline:auto;width:max-content;max-width:min(92vw,520px);background:var(--ink);color:var(--bg);border-radius:8px;padding:9px 14px;font-size:.92rem;z-index:20;text-align:center}
+@media (max-width:520px){
+  .path li{grid-template-columns:26px minmax(0,1fr)}
+  .path li .btn{grid-column:2;justify-self:start}
+  .shared div{grid-template-columns:1fr;gap:4px}
+  .shared .b{justify-self:start}
+  .conv li{grid-template-columns:78px minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){.vchip.flash{animation:none}}
+</style>
+</head>
+<body>
+<div id="app" dir="rtl" lang="he">
+  <header class="top">
+    <div class="top-in">
+      <div class="brand"><b>מאמן המיישם</b><span id="prog"></span></div>
+      <nav class="nav" id="nav" aria-label="ניווט ראשי">
+        <a href="#home">בית</a>
+        <a href="#inherit">מבנה והורשה</a>
+        <a href="#screens">מסכים ושדות</a>
+        <a href="#practice">תרגול</a>
+        <a href="#glossary">מילון</a>
+        <a href="#about">דיוק ומקורות</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main"></main>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+document.documentElement.lang='he'; document.documentElement.dir='rtl';
+
+/* ================= helpers ================= */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* data strings mark English terms with `backticks` */
+const fmt=s=>esc(s).replace(/`([^`]+)`/g,'<span class="en" dir="ltr">$1</span>');
+const en=s=>'<span class="en" dir="ltr">'+esc(s)+'</span>';
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}return a;};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+
+/* ================= content ================= */
+const MODS={org:'מבנה ארגוני והורשה',inv:'מלאי ופריטים',bom:'עצי מוצר ומסלולים',wip:'פקודות עבודה',mrp:'תכנון'};
+
+const L_SUPPLY=[
+ ['Push','ניפוק ידני של הרכיב לפקודה'],
+ ['Assembly Pull','ניפוק אוטומטי כשמדווחים גמר של המכלול'],
+ ['Operation Pull','ניפוק אוטומטי כשמשלימים את הפעולה במסלול'],
+ ['Bulk','לא מנופק לפקודה: חומר רצפה כללי, כמו ברגים ודבק'],
+ ['Supplier','הספק או קבלן המשנה מביא את הרכיב'],
+ ['Phantom','מכלול מדומה: רכיביו נפתחים ישר לפקודת האב']];
+const L_SRC=[
+ ['Inventory','מילוי מארגון אחר, דרך דרישה פנימית'],
+ ['Supplier','מילוי מספק, דרך דרישת רכש'],
+ ['Subinventory','מילוי ממחסן משנה אחר באותו ארגון']];
+const L_TF=[
+ ['Cumulative mfg. lead time','לפי זמן הייצור המצטבר של הפריט'],
+ ['Cumulative total lead time','לפי זמן האספקה המצטבר הכולל, כולל רכש'],
+ ['Total lead time','לפי זמן האספקה של הפריט עצמו'],
+ ['User-defined','מספר ימים שמזינים ידנית']];
+
+/* field: n=name on screen, he=Hebrew name, d=description, t: x text | l LOV | c checkbox,
+   ex=example value, lov=[[value, meaning]], lvl: M|O (common practice for control level),
+   tip=implementer tip, v=1 not verified against the official guide, vn=specific note, req=required */
+const SCREENS=[
+{id:'orgparams',mod:'org',name:'Organization Parameters',he:'פרמטרי ארגון',
+ path:'Inventory > Setup > Organizations > Parameters',
+ intro:'כאן קובעים את כללי המשחק של כל ארגון מלאי. השדה החשוב ביותר למבנה של חברת אם וחברות בנות הוא `Item Master Organization`.',
+ tabs:[
+ {name:'Inventory Parameters',fields:[
+  {n:'Organization Code',he:'קוד הארגון',ex:'N1',req:1,d:'קוד קצר שמזהה את ארגון המלאי בכל מסך ובכל דוח.',tip:'בחרו קודים בהיגיון אחיד לכל הקבוצה, למשל M1 לארגון האב ו-N1, S1 למפעלים. קשה מאוד לשנות אחר כך.'},
+  {n:'Item Master Organization',he:'ארגון האב לפריטים',ex:'M1',req:1,d:'הארגון שבו מגדירים את הפריטים לראשונה. כל ארגון מלאי מצביע על ארגון אב אחד, וארגון האב מצביע על עצמו. פריט חייב להתקיים בארגון האב לפני שמשייכים אותו לארגון בת.',tip:'זה הלב של ההורשה. לפי המדריך אין הבדל טכני בין ארגון האב לארגון רגיל, אבל מקובל להגדיר ארגון אב אחד לכל הקבוצה ולהשתמש בו להגדרות בלבד, בלי תנועות מלאי.'},
+  {n:'Calendar',he:'לוח ימי עבודה',ex:'IL-5DAY',req:1,d:'לוח ימי העבודה (`Workday Calendar`) של הארגון. התכנון, תזמון פקודות העבודה וחישובי זמני האספקה נשענים עליו.',tip:'לוח מוגדר פעם אחת, ואפשר לשייך אותו לכמה ארגונים. מפעל שעובד בימים אחרים צריך לוח משלו.'},
+  {n:'Locator Control',he:'ניהול איתורים',t:'l',ex:'Determined at subinventory level',d:'קובע אם תנועות מלאי בארגון דורשות איתור (`Locator`), ובאיזו רמה מחליטים על כך.',
+   lov:[['None','אין ניהול איתורים בארגון'],['Prespecified only','חובה לבחור איתור שהוגדר מראש'],['Dynamic entry allowed','אפשר להקים איתור חדש תוך כדי תנועה'],['Determined at subinventory level','ההחלטה עוברת לכל מחסן משנה']],
+   tip:'הבחירה הגמישה ביותר היא `Determined at subinventory level`: כל מחסן משנה מחליט לעצמו.'},
+  {n:'Allow Negative Balances',he:'יתרות שליליות',t:'c',ex:false,d:'אם מסומן, המערכת מאפשרת תנועה שמורידה את יתרת המלאי מתחת לאפס.',tip:'נוח בימי העלייה לאוויר, אבל פוגע באמינות המלאי והתמחיר. החלטה שמקבלים יחד עם הכספים.'}
+ ]},
+ {name:'Costing Information',fields:[
+  {n:'Costing Organization',he:'ארגון התמחיר',ex:'N1',d:'הארגון ששולט בעלויות הפריטים של הארגון הנוכחי: הארגון עצמו, או ארגון אחר (שיתוף עלויות). לפי המדריך, בלשונית הזו השדה מוצג בלבד.',tip:'שיתוף עלויות מארגון האב אפשרי רק בתמחיר תקן (`Standard`).',v:1,vn:'התנאי ששיתוף עלויות אפשרי רק בתמחיר תקן לא אומת מול התיעוד הרשמי.'},
+  {n:'Costing Method',he:'שיטת תמחיר',t:'l',ex:'Standard',d:'השיטה שבה המערכת מעריכה את המלאי ואת התנועות בארגון.',
+   lov:[['Standard','תמחיר תקן: עלות קבועה מראש, והסטיות נרשמות בנפרד'],['Average','ממוצע משוקלל נע, שמתעדכן בכל קבלה'],['FIFO','ראשון נכנס ראשון יוצא, לפי שכבות עלות'],['LIFO','אחרון נכנס ראשון יוצא, לפי שכבות עלות']],
+   tip:'אי אפשר להחליף שיטה אחרי שבוצעו תנועות בארגון. זו החלטה של הכספים, לא של המיישם לבדו.'}
+ ]},
+ {name:'Revision, Lot, Serial',fields:[
+  {n:'Starting Revision',he:'מהדורה התחלתית',ex:'0',d:'המהדורה (`Revision`) שתינתן כברירת מחדל לכל פריט חדש בארגון.'},
+  {n:'Lot Number Uniqueness',he:'ייחודיות מספר מנה',t:'l',ex:'None',d:'האם אותו מספר מנה יכול לשמש יותר מפריט אחד.',lov:[['Across items','מספר מנה ייחודי בין פריטים, בכל הארגונים'],['None','לא נדרשת ייחודיות של מספרי מנה']]},
+  {n:'Lot Number Generation',he:'יצירת מספרי מנה',t:'l',ex:'At item level',d:'מאיפה מגיע מספר המנה הבא.',lov:[['At item level','לפי הקידומת והמספר ההתחלתי שהוגדרו בפריט'],['At organization level','לפי קידומת ומספר רץ של הארגון'],['User-defined','המשתמש מקליד את המספר בעצמו']],v:1,vn:'שני הערכים הראשונים אומתו מול המדריך. הערך השלישי, `User-defined`, לא אומת.'},
+  {n:'Serial Number Uniqueness',he:'ייחודיות מספר סידורי',t:'l',ex:'Within inventory items',d:'באיזה היקף מספר סידורי חייב להיות ייחודי.',lov:[['Within inventory items','ייחודי בתוך אותו פריט'],['Within organization','ייחודי בתוך הארגון, גם בין פריטים'],['Across organizations','ייחודי בכל הארגונים, לכל הפריטים'],['Within inventory model and items','תצורות של אותו מודל יכולות לקבל את המספר של מודל הבסיס']],tip:'הרמות מצטברות. אם ארגון אחד בוחר `Across organizations`, הבחירה מגבילה את יצירת המספרים גם בשאר הארגונים. החלטה שמקבלים ברמת הקבוצה.'},
+  {n:'Serial Number Generation',he:'יצירת מספרים סידוריים',t:'l',ex:'At item level',d:'מאיפה מגיע המספר הסידורי הבא.',lov:[['At item level','לפי קידומת ומספר התחלתי שבפריט'],['At organization level','לפי קידומת ומספר רץ של הארגון']]}
+ ]}
+ ]},
+
+{id:'attrcontrols',mod:'org',name:'Item Attribute Controls',he:'בקרת מאפייני פריט',
+ path:'Inventory > Setup > Items > Attributes',
+ intro:'המסך שקובע את ההורשה. לכל מאפיין של פריט מחליטים כאן אם הוא אחיד בכל הקבוצה, או שכל ארגון קובע אותו לעצמו. לחלק מהמאפיינים המערכת קובעת רמה אחת בלבד.',
+ tabs:[{name:'Attribute Controls',fields:[
+  {n:'Group Name / Attribute Name',he:'קבוצה ושם מאפיין',ex:'General Planning.Make or Buy',d:'שם המאפיין, יחד עם קבוצת המאפיינים שלו (הלשונית במסך הפריט). הרשימה קבועה ומגיעה עם המערכת.'},
+  {n:'Controlled At',he:'רמת שליטה',t:'l',ex:'Org Level',d:'הרמה שבה מנהלים את ערך המאפיין.',
+   lov:[['Master Level','ערך אחד לכל הארגונים, שמתעדכן רק במסך Master Items'],['Org Level','ערך נפרד לכל ארגון, שמתעדכן במסך Organization Items']],
+   tip:'זו החלטת התכנון המרכזית של המיישם בקבוצה עם חברות בנות. לא הכול נתון לבחירה: `BOM Item Type` ו-`Effectivity Control`, למשל, נשלטים תמיד ברמת Master, ואילו `Planner`, זמני האספקה, `Source Organization` ו-`WIP Supply Subinventory` נשלטים תמיד ברמת Org.',v:1,vn:'הערכים `Master Level` ו-`Org Level` אומתו מול המדריך. שם העמודה במסך עצמו, Controlled At, לא אומת.'},
+  {n:'Status Setting',he:'השפעת הסטטוס',t:'l',ex:'Sets Value',d:'רלוונטי רק למאפייני הסטטוס, כמו `Stockable`, `Transactable` ו-`Build in WIP`. קובע איך `Item Status` משפיע על המאפיין.',
+   lov:[['Defaults Value','הסטטוס נותן ערך התחלתי, ואפשר לשנות אותו בפריט'],['Not Used','הסטטוס לא משפיע על המאפיין'],['Sets Value','הסטטוס קובע את הערך, ואי אפשר לשנות אותו בפריט']],
+   tip:'`Sets Value` נותן שליטה מרכזית: מעבר לסטטוס לא פעיל חוסם בבת אחת רכש, ייצור ותנועות.'}
+ ]}]},
+
+{id:'shipnet',mod:'org',name:'Shipping Networks',he:'רשת העברות בין ארגונים',
+ path:'Inventory > Setup > Organizations > Shipping Networks',
+ intro:'מגדיר בין אילו ארגונים מותר להעביר מלאי, ואיך. בקבוצה עם חברות בנות זה המסך שמחבר ביניהן.',
+ tabs:[{name:'Shipping Networks',fields:[
+  {n:'From / To',he:'מארגון / לארגון',ex:'N1 > S1',req:1,d:'זוג הארגונים שביניהם מותרת העברה. בלי שורה במסך הזה אי אפשר לבצע העברה בין שני הארגונים.'},
+  {n:'Transfer Type',he:'סוג העברה',t:'l',ex:'Intransit',d:'האם ההעברה מיידית או עוברת דרך מלאי בדרך.',lov:[['Direct','המלאי עובר מיד, בתנועה אחת'],['Intransit','המלאי יוצא למלאי בדרך ונקלט בתנועת קבלה נפרדת']],tip:'ארגונים רחוקים פיזית, או חברות נפרדות, עובדים בדרך כלל ב-`Intransit`.'},
+  {n:'FOB',he:'נקודת העברת בעלות',t:'l',ex:'Receipt',d:'רלוונטי ל-`Intransit`: קובע של מי המלאי שנמצא בדרך.',lov:[['Shipment','הבעלות עוברת לארגון היעד ברגע המשלוח'],['Receipt','הבעלות נשארת אצל השולח עד הקבלה']]},
+  {n:'Receipt Routing',he:'מסלול קבלה',t:'l',ex:'Direct',d:'איך המלאי נקלט בארגון היעד.',lov:[['Standard','קבלה לרציף, ואחריה העברה למלאי'],['Inspection','קבלה, בדיקת איכות, ואז העברה למלאי'],['Direct','קבלה ישירות למלאי']]},
+  {n:'Internal Order Required',he:'חובת הזמנה פנימית',t:'c',ex:true,d:'אם מסומן, העברה בין שני הארגונים חייבת להתבצע דרך דרישה פנימית והזמנה פנימית, ולא בתנועת מלאי ישירה.',tip:'בין חברות נפרדות רוצים בדרך כלל מסמך מסודר ומחיר העברה. את הנושא הזה סוגרים עם הכספים.'}
+ ]}]},
+
+{id:'item',mod:'inv',name:'Master Item',he:'פריט אב',
+ path:'Inventory > Items > Master Items',
+ intro:'המסך המרכזי של המיישם. כל לשונית היא קבוצת מאפיינים. במסך האמיתי יש 17 לשוניות, וכאן מופיעות התשע שנוגעות למלאי ולתפ"י. הסימון M או O ליד שדה הוא רמת השליטה המקובלת. כוכבית מציינת רמה שהמערכת קובעת, בלי בחירה.',
+ tabs:[
+ {name:'Main',fields:[
+  {n:'Item',he:'מספר הפריט (מק"ט)',ex:'PUMP-100',req:1,lvl:'M',d:'מספר הפריט. זהו שדה גמיש (`Key Flexfield`) בשם System Items, שהמבנה שלו נקבע פעם אחת לכל המערכת.',tip:'המק"ט זהה תמיד בכל הארגונים. קבעו מוסכמת מספור לפני הסבת הנתונים.'},
+  {n:'Description',he:'תיאור',ex:'Centrifugal pump 100mm',req:1,lvl:'M',d:'תיאור הפריט, כפי שיופיע במסכים ובדוחות.'},
+  {n:'Primary Unit of Measure',he:'יחידת מידה ראשית',ex:'Each',req:1,lvl:'M',d:'יחידת המידה שבה מנהלים את המלאי של הפריט.',tip:'יחידה אחידה בכל הקבוצה מפשטת העברות בין ארגונים. לפי המדריך, השדה אינו ניתן לעדכון.',v:1,vn:'המדריך הרשמי אינו עקבי לגבי רמת השליטה של השדה הזה: במקום אחד הוא מוצג כדוגמה למאפיין ברמת Master, ובמקום אחר כמאפיין ברמת Org. בדקו במסך Item Attribute Controls אצלכם.'},
+  {n:'User Item Type',he:'סוג פריט',t:'l',ex:'Finished good',lvl:'M',d:'סיווג לצורכי דיווח וסינון. הערך עצמו לא משנה את התנהגות הפריט: את ההתנהגות קובעים המאפיינים.',
+   lov:[['Finished good','מוצר מוגמר'],['Subassembly','תת-מכלול'],['Purchased item','פריט קנוי'],['Phantom item','מכלול מדומה (פנטום)'],['Outside processing item','פריט של עבודת חוץ'],['Kit','ערכה']],
+   tip:'הרשימה ניתנת להרחבה, ולכן אצלכם ייתכנו ערכים נוספים.'},
+  {n:'Item Status',he:'סטטוס פריט',t:'l',ex:'Active',lvl:'M',d:'קוד סטטוס שקובע, או מציע, ערכים למאפייני הסטטוס של הפריט.',
+   lov:[['Active','פעיל: הסטטוס שמופיע בתבניות המוכנות של המערכת'],['Inactive','דוגמה לסטטוס שהחברה מגדירה: הפריט חסום לפעולות']],
+   tip:'רשימת הסטטוסים מוגדרת ב-Setup > Items > Status Codes ומשותפת לכל הארגונים. מקובל להוסיף סטטוסים כמו פיתוח, אב-טיפוס או הוצאה משימוש.',v:1,vn:'קודי הסטטוס מוגדרים על ידי החברה. במדריך מופיע רק `Active` כערך מוכן. שאר הערכים, כולל Inactive, תלויים בהגדרות אצלכם.'},
+  {n:'Conversions',he:'המרות יחידות',t:'l',ex:'Both',d:'אילו המרות בין יחידות מידה מותרות לפריט.',lov:[['Both','גם ההמרות הכלליות וגם המרות ייחודיות לפריט'],['Item specific','רק המרות שהוגדרו לפריט הזה'],['Standard','רק ההמרות הכלליות של יחידות המידה']]}
+ ]},
+ {name:'Inventory',fields:[
+  {n:'Inventory Item',he:'פריט מלאי',t:'c',ex:true,lvl:'M',d:'הפריט יכול להיות מנוהל במלאי. זהו תנאי מקדים ל-`Stockable` ולמאפיינים רבים אחרים.'},
+  {n:'Stockable',he:'ניתן לאחסון',t:'c',ex:true,d:'אפשר להחזיק את הפריט במלאי. מאפיין סטטוס. דורש `Inventory Item`.'},
+  {n:'Transactable',he:'ניתן לתנועות',t:'c',ex:true,d:'אפשר לבצע בפריט תנועות מלאי. מאפיין סטטוס. דורש `Stockable`.'},
+  {n:'Revision Control',he:'ניהול מהדורות',t:'c',ex:false,lvl:'M',d:'כל תנועה תדרוש ציון מהדורה, והיתרות ינוהלו לפי מהדורה.',tip:'קבעו לפני שיש יתרות מלאי. שינוי מאוחר מוגבל.',v:1,vn:'ההגבלה על שינוי כשיש יתרות מלאי לא אומתה מול התיעוד הרשמי.'},
+  {n:'Reservable',he:'ניתן לשריון',t:'c',ex:true,lvl:'O',d:'מותר לשריין מלאי של הפריט להזמנות.'},
+  {n:'Lot Control',he:'ניהול מנות',t:'l',ex:'No control',lvl:'M',d:'האם המלאי של הפריט מנוהל לפי מספרי מנה (אצווה).',lov:[['No control','ללא ניהול מנות'],['Full control','כל תנועה דורשת מספר מנה']],tip:'אחידות בקבוצה חשובה אם הפריט עובר בין ארגונים. קבעו לפני שיש יתרות מלאי.',v:1,vn:'ערכי הרשימה אומתו מול המדריך. ההגבלה על שינוי כשיש יתרות מלאי לא אומתה.'},
+  {n:'Lot Expiration (Shelf Life) Control',he:'ניהול תפוגה',t:'l',ex:'No control',d:'איך נקבע תאריך התפוגה של מנה.',lov:[['No control','ללא תאריך תפוגה'],['Shelf life days','תפוגה לפי מספר ימים קבוע מיום הקבלה'],['User-defined','המשתמש מזין תאריך תפוגה בקבלה']]},
+  {n:'Serial Generation',he:'ניהול מספרים סידוריים',t:'l',ex:'No control',lvl:'M',d:'האם, ומאיזה שלב, כל יחידה מזוהה במספר סידורי.',lov:[['No Control','ללא מספרים סידוריים'],['Predefined','מספרים שהוגדרו מראש, וחובה לציין אותם בכל תנועה'],['At Receipt','המספר נקבע בקבלה למלאי, ומאז חובה בכל תנועה'],['At Sales Order Issue','המספר נקבע רק בניפוק ללקוח']],ver:'אלה הערכים במדריך של 12.2. במדריך של 12.1 הם נקראים `At inventory receipt` ו-`At sales order issue`.'},
+  {n:'Locator Control',he:'ניהול איתורים',t:'l',ex:'No control',lvl:'O',d:'האם תנועות בפריט דורשות איתור.',lov:[['No control','ללא איתור'],['Prespecified','חובה לבחור איתור קיים'],['Dynamic entry','אפשר להקים איתור תוך כדי תנועה']],tip:'נכנס לתוקף רק אם גם הארגון וגם מחסן המשנה העבירו את ההחלטה לרמת הפריט.'},
+  {n:'Restrict Subinventories',he:'הגבלת מחסני משנה',t:'c',ex:false,lvl:'O',d:'מגביל את הפריט לרשימת מחסני משנה שהוגדרה לו.'},
+  {n:'Cycle Count Enabled',he:'ספירה מחזורית',t:'c',ex:true,lvl:'O',d:'הפריט נכלל בספירות מחזוריות.'}
+ ]},
+ {name:'Bills of Material',fields:[
+  {n:'BOM Allowed',he:'מותר בעץ מוצר',t:'c',ex:true,d:'מותר להגדיר לפריט עץ מוצר, או לשבץ אותו כרכיב בעץ. מאפיין סטטוס.'},
+  {n:'BOM Item Type',he:'סוג פריט בעץ',t:'l',ex:'Standard',lvl:'M',fx:1,d:'קובע איזה סוג עץ מותר לפריט.',lov:[['Standard','פריט רגיל: כל פריט שאינו אחד מהסוגים האחרים'],['Model','מודל להרכבה לפי בחירות הלקוח'],['Option Class','קבוצת אפשרויות בתוך מודל'],['Planning','עץ תכנוני: אחוזי חלוקה לצורכי תחזית'],['Product Family','משפחת מוצרים לתכנון מצרפי']]},
+  {n:'Effectivity Control',he:'בקרת תוקף',t:'l',ex:'Date',lvl:'M',fx:1,d:'איך נקבע אילו רכיבים בתוקף בעץ.',lov:[['Date','לפי טווח תאריכים'],['Model/Unit Number','לפי מספר יחידה, בייצור פרויקטלי']]}
+ ]},
+ {name:'Costing',fields:[
+  {n:'Costing Enabled',he:'מתומחר',t:'c',ex:true,d:'הפריט נושא עלות.'},
+  {n:'Inventory Asset Value',he:'ערך נכס מלאי',t:'c',ex:true,d:'ערך הפריט נרשם כנכס מלאי, ולא כהוצאה.'},
+  {n:'Include in Rollup',he:'נכלל בגלגול עלויות',t:'c',ex:true,lvl:'O',d:'הפריט נכלל בגלגול העלויות (`Cost Rollup`) של המכלולים שמעליו.'},
+  {n:'Cost of Goods Sold Account',he:'חשבון עלות המכר',ex:'01-520-5010',lvl:'O',fx:1,d:'חשבון עלות המכר של הפריט.'},
+  {n:'Standard Lot Size',he:'גודל מנה תקני',ex:'50',lvl:'O',d:'גודל המנה שלפיו מחושבת עלות ליחידה של עלויות קבועות למנה.'}
+ ]},
+ {name:'Purchasing',fields:[
+  {n:'Purchased',he:'פריט קנוי',t:'c',ex:false,d:'הפריט הוא פריט קנוי. תנאי מקדים ל-`Purchasable`.',tip:'אם `Purchasable` נשלט ברמת Master, גם `Purchased` חייב להיות ברמת Master.'},
+  {n:'Purchasable',he:'ניתן לרכישה',t:'c',ex:false,d:'מותר להזמין את הפריט בהזמנת רכש. מאפיין סטטוס.'},
+  {n:'Outside Processing Item',he:'פריט עבודת חוץ',t:'c',ex:false,d:'הפריט מייצג שירות של קבלן משנה, שמחויב לפקודת עבודה.'},
+  {n:'List Price',he:'מחיר מחירון',ex:'1,250.00',lvl:'O',d:'מחיר שמוצע כברירת מחדל בדרישות ובהזמנות רכש.'}
+ ]},
+ {name:'General Planning',fields:[
+  {n:'Inventory Planning Method',he:'שיטת תכנון מלאי',t:'l',ex:'Min-max',lvl:'O',d:'שיטת המילוי הפשוטה של מודול המלאי, ללא MRP.',lov:[['Not Planned','הפריט לא מתוכנן בשיטות המלאי'],['Min-Max','מזמינים כשהמלאי יורד מתחת למינימום, עד למקסימום'],['Reorder Point','מזמינים כשהמלאי יורד לנקודת הזמנה מחושבת']],tip:'לא להתבלבל עם `Planning Method` שבלשונית MPS / MRP Planning. אלה שתי שיטות תכנון נפרדות.',ver:'במדריך של 12.1 הערכים כתובים `Not planned`, `Min-max`, `Reorder point`.'},
+  {n:'Planner',he:'מתכנן',ex:'DANA',lvl:'O',fx:1,d:'המתכנן האחראי על הפריט. רשימת המתכננים מוגדרת לכל ארגון בנפרד.'},
+  {n:'Make or Buy',he:'ייצור או קנייה',t:'l',ex:'Make',lvl:'O',d:'קובע מה התכנון יציע כברירת מחדל.',lov:[['Make','מיוצר: התכנון יציע פקודת עבודה'],['Buy','קנוי: התכנון יציע דרישת רכש']],tip:'בקבוצה, אותו פריט יכול להיות מיוצר במפעל אחד וקנוי בחברה אחרת. לכן נהוג לשלוט בו ברמת Org.'},
+  {n:'Min-Max Minimum Quantity',he:'כמות מינימום',ex:'20',lvl:'O',d:'כשהמלאי הזמין יורד מתחת לכמות הזו, תכנון Min-Max מציע הזמנה.'},
+  {n:'Min-Max Maximum Quantity',he:'כמות מקסימום',ex:'100',lvl:'O',d:'ההזמנה המוצעת משלימה את המלאי עד לכמות הזו.'},
+  {n:'Minimum Order Quantity',he:'כמות הזמנה מינימלית',ex:'10',lvl:'O',d:'התכנון לא יציע הזמנה קטנה מהכמות הזו.'},
+  {n:'Maximum Order Quantity',he:'כמות הזמנה מקסימלית',ex:'500',lvl:'O',d:'התכנון לא יציע הזמנה אחת גדולה מהכמות הזו.'},
+  {n:'Fixed Order Quantity',he:'כמות הזמנה קבועה',ex:'',lvl:'O',d:'כל הזמנה מתוכננת תהיה בדיוק בכמות הזו. אם נדרש יותר, התכנון יציע כמה הזמנות.'},
+  {n:'Fixed Days Supply',he:'ימי אספקה קבועים',ex:'5',lvl:'O',d:'התכנון מאחד את הדרישות של מספר ימי העבודה הזה להזמנה אחת.'},
+  {n:'Fixed Lot Multiplier',he:'מכפלת מנה',ex:'10',lvl:'O',d:'כמות ההזמנה מעוגלת כלפי מעלה לכפולה של המספר הזה.'},
+  {n:'Source Type',he:'סוג מקור',t:'l',ex:'Supplier',lvl:'O',d:'מאיפה ממלאים את הפריט כשנדרשת אספקה.',lov:L_SRC,tip:'כך מגדירים שחברת בת מתמלאת ממרכז ההפצה של הקבוצה: `Inventory`, יחד עם `Source Organization`.'},
+  {n:'Source Organization',he:'ארגון מקור',ex:'D1',lvl:'O',fx:1,d:'הארגון שממנו מגיע המילוי, כשסוג המקור הוא `Inventory`.'},
+  {n:'Safety Stock Method',he:'שיטת מלאי ביטחון',t:'l',ex:'Non-MRP Planned',lvl:'O',d:'איך נקבע מלאי הביטחון של הפריט.',lov:[['Non-MRP Planned','מלאי הביטחון מוגדר או מחושב במודול המלאי'],['MRP Planned %','התכנון מחשב מלאי ביטחון כאחוז מהדרישה']],ver:'במדריך של 12.1 הערכים כתובים `Non-MRP planned` ו-`MRP planned percent`.'}
+ ]},
+ {name:'MPS / MRP Planning',fields:[
+  {n:'Planning Method',he:'שיטת תכנון',t:'l',ex:'MRP planning',lvl:'O',d:'קובע באיזו תוכנית הפריט מתוכנן.',lov:[['Not planned','לא מתוכנן ב-MRP'],['MRP planning','מתוכנן בתוכנית MRP'],['MPS planning','מתוכנן בתוכנית האב לייצור (MPS)'],['MRP/MPP Planned','מתוכנן ב-MRP וגם בתוכנית MPP'],['MPS/MPP Planned','מתוכנן ב-MPS וגם בתוכנית MPP'],['MPP Planned','מתוכנן בתוכנית MPP בלבד']],ver:'אלה הערכים במדריך של 12.2. במדריך של 12.1 שלושת האחרונים נקראים `MRP/DRP Planned`, `MPS/DRP Planned` ו-`DRP Planned`. המשמעות המדויקת של MPP לא נבדקה כאן.'},
+  {n:'Forecast Control',he:'בקרת תחזית',t:'l',ex:'Consume',lvl:'O',d:'איך תחזית מתנהגת עבור הפריט.',lov:[['Consume','התחזית מוזנת לפריט, והזמנות לקוח צורכות אותה'],['Consume and derive','התחזית נגזרת מפריט האב וגם נצרכת'],['None','אין תחזית לפריט']]},
+  {n:'Pegging',he:'הצמדת אספקה לדרישה',t:'l',ex:'Soft Pegging',lvl:'O',d:'האם התכנון שומר ומציג את הקשר בין כל אספקה לדרישה שהיא משרתת.',lov:[['Soft Pegging','מקצה אספקה לדרישה לפי רמת השריון שבאפשרויות התוכנית'],['End Assembly Pegging','עוקב עד המוצר הסופי שבראש העץ שהפריט משויך אליו'],['End Assembly / Soft Pegging','שילוב של שתי האפשרויות הקודמות'],['Hard Pegging','מצמיד אספקה לדרישה לפי פרויקט, בכל רמות העץ'],['End Assembly / Hard Pegging','הצמדה לפי פרויקט יחד עם מעקב עד המוצר הסופי'],['None','ללא בחירה בפריט: ההתנהגות נקבעת בהגדרה כללית של המערכת']]},
+  {n:'Shrinkage Rate',he:'שיעור פחת',ex:'0.02',lvl:'O',d:'שיעור הפחת הצפוי בייצור או בקבלה. התכנון מגדיל את הכמות המוזמנת בהתאם.'},
+  {n:'Acceptable Early Days',he:'ימי הקדמה נסבלים',ex:'3',lvl:'O',d:'כמה ימים מותר לאספקה להגיע לפני הצורך, בלי שהתכנון יציע לדחות אותה.'},
+  {n:'Round Order Quantities',he:'עיגול כמויות',t:'c',ex:true,lvl:'O',d:'כמויות מתוכננות מעוגלות כלפי מעלה למספר שלם.'},
+  {n:'Planning Time Fence',he:'גדר זמן לתכנון',t:'l',ex:'Cumulative mfg. lead time',lvl:'O',d:'הטווח הקרוב שבו התכנון אינו משנה את תוכנית החומרים הקיימת, כדי לא לזעזע את רצפת הייצור.',lov:L_TF},
+  {n:'Demand Time Fence',he:'גדר זמן לדרישה',t:'l',ex:'User-defined',lvl:'O',d:'הטווח הקרוב שבו התכנון מתעלם מתחזית ומתחשב רק בהזמנות לקוח בפועל.',lov:L_TF},
+  {n:'Release Time Fence',he:'גדר זמן לשחרור',t:'l',ex:'User-Defined',lvl:'O',d:'הטווח שבו הזמנות מתוכננות משוחררות אוטומטית לפקודות עבודה או לדרישות רכש.',lov:[['Cumulative Mfg. Lead Time','לפי זמן הייצור המצטבר של הפריט'],['Cumulative Total Lead Time','לפי זמן האספקה המצטבר הכולל'],['Total Lead Time','לפי זמן האספקה של הפריט עצמו'],['User-Defined','מספר ימים שמזינים ידנית'],['Do Not Autorelease','בלי שחרור אוטומטי'],['Kanban Item (Do Not Release)','פריט קנבן: לא משוחרר דרך התכנון'],['Do Not Release (Auto or Manual)','לא משוחרר כלל, לא אוטומטית ולא ידנית']],ver:'אלה הערכים במדריך של 12.2. במדריך של 12.1 הרשימה קצרה יותר, והכתיב שונה מעט.'}
+ ]},
+ {name:'Lead Times',fields:[
+  {n:'Preprocessing',he:'זמן הכנה',ex:'1',lvl:'O',fx:1,d:'ימים שמוסיפים לזמן הרכש או הייצור כדי להוציא את ההזמנה: אישורים וניירת.'},
+  {n:'Processing',he:'זמן אספקה או ייצור',ex:'7',lvl:'O',fx:1,d:'הימים שנדרשים לרכוש או לייצר את הפריט. במכלול מיוצר זהו זמן הייצור.'},
+  {n:'Postprocessing',he:'זמן קליטה',ex:'1',lvl:'O',fx:1,d:'ימים מקבלת הפריט מהספק ועד שהוא זמין במלאי. רלוונטי לפריטים קנויים בלבד.'},
+  {n:'Fixed',he:'זמן קבוע',ex:'2',lvl:'O',fx:1,d:'החלק בזמן הייצור שאינו תלוי בכמות, למשל כיוון מכונה.'},
+  {n:'Variable',he:'זמן משתנה',ex:'0.5',lvl:'O',fx:1,d:'זמן הייצור לכל יחידה נוספת.',tip:'זמן ייצור לפקודה = Fixed + Variable × כמות. לדוגמה: 2 + 0.5 × 10 = 7 ימים.'},
+  {n:'Cumulative Manufacturing',he:'זמן ייצור מצטבר',ex:'12',lvl:'O',fx:1,d:'זמן הייצור המצטבר לאורך כל רמות העץ, בהנחה שכל הרכיבים כבר במלאי.',tip:'את הזמנים המצטברים לא מקלידים: מחשבים אותם בריצה ייעודית במודול עצי המוצר.',v:1,vn:'אופן החישוב של הזמנים המצטברים נבדק רק דרך תקציר חיפוש של המדריך, ולא בקריאה ישירה שלו.'},
+  {n:'Cumulative Total',he:'זמן אספקה מצטבר כולל',ex:'30',lvl:'O',fx:1,d:'זמן האספקה המצטבר הכולל, בהנחה ששום רכיב אינו במלאי.',v:1,vn:'אופן החישוב של הזמנים המצטברים נבדק רק דרך תקציר חיפוש של המדריך, ולא בקריאה ישירה שלו.'},
+  {n:'Lead Time Lot Size',he:'גודל מנה לזמן אספקה',ex:'10',lvl:'O',d:'הכמות שלפיה מחושב זמן הייצור של הפריט.'}
+ ]},
+ {name:'Work In Process',fields:[
+  {n:'Build in WIP',he:'ניתן לייצור',t:'c',ex:true,d:'מותר לפתוח לפריט פקודת עבודה. מאפיין סטטוס.',tip:'אפשר לסמן רק אם `Inventory Item` מסומן וגם `BOM Item Type` הוא `Standard`.'},
+  {n:'Supply Type',he:'שיטת אספקה לייצור',t:'l',ex:'Push',lvl:'O',d:'איך הפריט, כשהוא רכיב, מגיע לפקודת העבודה. זו ברירת המחדל, ואפשר לעקוף אותה בעץ המוצר.',lov:L_SUPPLY},
+  {n:'Supply Subinventory',he:'מחסן אספקה לייצור',ex:'FLOOR',lvl:'O',fx:1,d:'המחסן שממנו הרכיב מנופק לייצור.',tip:'ברכיבים שמנופקים אוטומטית (Pull) המערכת חייבת לדעת מאיזה מחסן לקחת.'},
+  {n:'Overcompletion Tolerance Type',he:'סוג חריגת ייצור',t:'l',ex:'Percent',lvl:'O',d:'כמה מותר לדווח גמר מעבר לכמות הפקודה.',lov:[['Percent','חריגה מותרת באחוזים מכמות הפקודה'],['Amount','חריגה מותרת בכמות מוחלטת']]}
+ ]}
+ ]},
+
+{id:'subinv',mod:'inv',name:'Subinventories',he:'מחסני משנה',
+ path:'Inventory > Setup > Organizations > Subinventories',
+ intro:'מחסן משנה (`Subinventory`) הוא חלוקה פיזית או לוגית של המלאי בתוך ארגון: חומרי גלם, תוצרת גמורה, הסגר, פסולים. הוא מוגדר לכל ארגון בנפרד ולא עובר בהורשה.',
+ tabs:[
+ {name:'Main',fields:[
+  {n:'Name',he:'שם מחסן המשנה',ex:'RM-STORE',req:1,d:'הקוד הקצר של מחסן המשנה, כפי שיופיע בכל תנועה.'},
+  {n:'Status',he:'סטטוס חומר',ex:'Active',d:'סטטוס החומר של המחסן. ב-R12 הוא שקובע את שלושת המאפיינים שמוצגים באזור Status Attributes: `Nettable`, `Allow Reservation` ו-`Include in ATP`.',tip:'כדי שמחסן הסגר לא ייחשב זמין לתכנון, נותנים לו סטטוס חומר שבו Nettable כבוי. שמות הסטטוסים מוגדרים אצלכם.'},
+  {n:'Type',he:'סוג',t:'l',ex:'Storage',d:'ייעוד המחסן.',lov:[['Storage','מחסן אחסון רגיל'],['Receiving','אזור קבלה: מלאי שהתקבל וטרם אופסן']]},
+  {n:'Quantity Tracked',he:'מעקב כמויות',t:'c',ex:true,d:'המערכת מנהלת יתרות כמות במחסן. אם לא מסומן, אין יתרות, ואי אפשר לסמן את המחסן כמחסן נכס.',tip:'כמעט תמיד מסומן. מחסן ללא מעקב משמש לחומרים שלא סופרים.'},
+  {n:'Asset Subinventory',he:'מחסן נכס',t:'c',ex:true,d:'ערך המלאי במחסן מוחזק במאזן. אם לא מסומן זהו מחסן הוצאה.',tip:'אפשר לשנות את הסימון רק כשאין יתרת מלאי במחסן.'},
+  {n:'Nettable',he:'זמין לתכנון',t:'c',ex:true,d:'המלאי במחסן נחשב זמין בתכנון. בתכנון Min-Max, המלאי הזמין הוא סכום היתרות בכל המחסנים שמוגדרים Nettable. השדה מוצג בלבד: הוא נקבע לפי ה-`Status` של המחסן.',tip:'מחסני הסגר, פסולים והחזרות מוגדרים בדרך כלל כלא זמינים לתכנון, כדי שהתכנון לא יסמוך עליהם.'},
+  {n:'Include in ATP',he:'נכלל בהבטחת זמינות',t:'c',ex:true,d:'המלאי נכלל בחישוב הזמינות שמבטיחים ללקוח (Available to Promise). השדה מוצג בלבד: הוא נקבע לפי ה-`Status` של המחסן.'},
+  {n:'Allow Reservation',he:'מותר לשריין',t:'c',ex:true,d:'מותר לשריין מלאי מהמחסן הזה. השדה מוצג בלבד: הוא נקבע לפי ה-`Status` של המחסן.'},
+  {n:'Locator Control',he:'ניהול איתורים',t:'l',ex:'Prespecified',d:'האם תנועות במחסן דורשות איתור.',lov:[['None','ללא איתורים במחסן'],['Prespecified','חובה לבחור איתור קיים'],['Dynamic entry','אפשר להקים איתור תוך כדי תנועה'],['Item level','ההחלטה עוברת למאפיין שבפריט']],tip:'השדה פעיל רק אם בפרמטרי הארגון נבחר `Determined at subinventory level`.'},
+  {n:'Picking Order',he:'סדר ליקוט',ex:'10',d:'סדר העדיפות של המחסן כשהמערכת מציעה מאיפה ללקט.'}
+ ]},
+ {name:'Sourcing & Accounts',fields:[
+  {n:'Sourcing Type',he:'סוג מקור',t:'l',ex:'Subinventory',d:'מקור המילוי של המחסן בתכנון Min-Max ברמת מחסן משנה.',lov:L_SRC},
+  {n:'Material Account',he:'חשבון מלאי',ex:'01-000-1410',d:'חשבון המלאי של המחסן בהנהלת החשבונות.'}
+ ]}
+ ]},
+
+{id:'bom',mod:'bom',name:'Bills of Material',he:'עץ מוצר',
+ path:'Bills of Material > Bills > Bills',
+ intro:'עץ מוצר מוגדר לכל ארגון בנפרד. כדי שכמה חברות בקבוצה ישתמשו באותו עץ משתמשים ב-`Common Bill`: עץ שמפנה לעץ בארגון אחר.',
+ tabs:[
+ {name:'Bill',fields:[
+  {n:'Item',he:'מכלול',ex:'PUMP-100',req:1,d:'המכלול שהעץ מתאר.'},
+  {n:'Alternate',he:'עץ חלופי',ex:'',d:'שם של עץ חלופי לאותו מכלול, למשל עם רכיב תחליפי. שדה ריק פירושו העץ הראשי.'},
+  {n:'Revision',he:'מהדורה',ex:'A',d:'מהדורת המכלול שמוצגת כרגע.'},
+  {n:'Common Bill',he:'עץ משותף',ex:'M1 / PUMP-100',d:'הפניה לעץ של פריט אחר או של ארגון אחר. העץ המפנה לא מחזיק רכיבים משלו, אלא משתמש ברכיבי המקור.',tip:'כך חברת בת משתמשת בעץ שמנוהל מרכזית. התנאים: שני הארגונים חולקים אותו ארגון אב, כל הרכיבים קיימים גם בארגון המפנה, לשני העצים אותו שם חלופי, ועץ המקור אינו מפנה בעצמו לעץ אחר. הסימון Enable attributes update מאפשר לעץ המפנה לקבוע לעצמו חמישה שדות: `Supply Type`, `Subinventory`, `Locator`, `Operation Seq` ו-`Include in Cost Rollup`.'}
+ ]},
+ {name:'Main',fields:[
+  {n:'Item Seq',he:'מספר שורה',ex:'10',d:'קובע את סדר הרכיבים בעץ.'},
+  {n:'Operation Seq',he:'מספר פעולה',ex:'10',d:'הפעולה במסלול הייצור שבה הרכיב נצרך. לפיה נקבע מתי הרכיב נדרש, ומתי הוא מנופק ב-`Operation Pull`.'},
+  {n:'Component',he:'רכיב',ex:'MOTOR-22',req:1,d:'הפריט שנכנס למכלול.'},
+  {n:'Quantity',he:'כמות',ex:'1',req:1,d:'כמות הרכיב ליחידת מכלול אחת.'}
+ ]},
+ {name:'Date Effectivity',fields:[
+  {n:'From',he:'בתוקף מתאריך',ex:'01-JAN-2026',d:'התאריך שממנו הרכיב בתוקף בעץ.'},
+  {n:'To',he:'בתוקף עד',ex:'',d:'התאריך שבו הרכיב יוצא מתוקף. שדה ריק פירושו ללא הגבלה.',tip:'לא מוחקים רכיב: סוגרים לו תאריך. כך נשמרת ההיסטוריה של העץ.'}
+ ]},
+ {name:'Component Details',fields:[
+  {n:'Planning Percent',he:'אחוז תכנון',ex:'100',d:'אחוז החלוקה לתחזית, בעצים תכנוניים, במודלים ובקבוצות אפשרויות.'},
+  {n:'Basis',he:'בסיס הכמות',t:'l',ex:'Item',d:'האם כמות הרכיב תלויה בכמות המיוצרת.',lov:[['Item','הכמות גדלה ביחס ישר לכמות המיוצרת'],['Lot','כמות קבועה לפקודה, בלי קשר לגודלה']],v:1,vn:'השדה וערכיו אומתו מול המדריך. באיזו לשונית הוא מופיע במסך לא אומת.'},
+  {n:'Yield',he:'תפוקה',ex:'1',d:'תפוקת הרכיב. הערך 0.9 אומר שרק 90% מהרכיב שמיש, ולכן הדרישה גדלה בהתאם.'},
+  {n:'Include in Cost Rollup',he:'נכלל בגלגול עלויות',t:'c',ex:true,d:'עלות הרכיב נכללת בחישוב עלות המכלול.'}
+ ]},
+ {name:'Material Control',fields:[
+  {n:'Supply Type',he:'שיטת אספקה',t:'l',ex:'Assembly Pull',d:'שיטת האספקה של הרכיב לפקודה. ברירת המחדל מגיעה מהפריט, ואפשר לעקוף אותה כאן לעץ הספציפי.',lov:L_SUPPLY},
+  {n:'Subinventory',he:'מחסן משנה',ex:'FLOOR',d:'המחסן שממנו הרכיב מנופק לפקודה.'}
+ ]}
+ ]},
+
+{id:'routing',mod:'bom',name:'Routings',he:'מסלול ייצור',
+ path:'Bills of Material > Routings > Routings',
+ intro:'מסלול הייצור הוא רצף הפעולות: באיזו מחלקה ועם אילו משאבים. מחלקות ומשאבים שייכים לארגון, ולכן מסלול מוגדר לכל ארגון בנפרד.',
+ tabs:[
+ {name:'Routing',fields:[
+  {n:'Item',he:'מכלול',ex:'PUMP-100',req:1,d:'המכלול שהמסלול מתאר.'},
+  {n:'Alternate',he:'מסלול חלופי',ex:'',d:'שם של מסלול חלופי לאותו מכלול. שדה ריק פירושו המסלול הראשי.'},
+  {n:'Completion Subinventory',he:'מחסן לדיווח גמר',ex:'FG-STORE',d:'המחסן שאליו נכנסת התוצרת הגמורה כברירת מחדל.'},
+  {n:'Common Routing',he:'מסלול משותף',ex:'',d:'הפניה למסלול של פריט אחר, במקום להגדיר את הפעולות מחדש.',tip:'בשונה מעץ מוצר, אי אפשר להפנות למסלול שנמצא בארגון אחר. מסלול משותף עובד רק בתוך אותו ארגון.'}
+ ]},
+ {name:'Operations',fields:[
+  {n:'Seq',he:'מספר פעולה',ex:'10',req:1,d:'מספר הפעולה במסלול. מקובל לספור בעשרות כדי להשאיר מקום להוספות.'},
+  {n:'Code',he:'קוד פעולה סטנדרטית',ex:'ASSY',d:'פעולה סטנדרטית: תבנית מוכנה שממלאת את המחלקה ואת המשאבים.'},
+  {n:'Department',he:'מחלקה',ex:'ASSEMBLY',req:1,d:'המחלקה שבה הפעולה מתבצעת.'},
+  {n:'Count Point',he:'נקודת ספירה',t:'c',ex:true,d:'הפעולה היא נקודת דיווח: כשמעבירים כמות מנקודת ספירה אחת לבאה, המערכת משלימה לבד את הפעולות שביניהן.',tip:'אי אפשר לסמן Count Point בלי לסמן גם Autocharge.'},
+  {n:'Autocharge',he:'חיוב אוטומטי',t:'c',ex:true,d:'הפעולה מושלמת ומחויבת אוטומטית כשהפקודה עוברת דרכה, גם אם לא עצרו בה בדיווח.',tip:'שלושה שילובים: שניהם מסומנים, פעולה רגילה שמדווחים בה. רק Autocharge, פעולה שמושלמת לבד ולא עוצרים בה. אף אחד, פעולה שכאילו אינה קיימת במסלול אלא אם מדווחים אליה וממנה במפורש. שימושי לפעולות תיקון.'},
+  {n:'Backflush',he:'ניפוק אוטומטי',t:'c',ex:true,d:'בדיווח תנועה בפעולה הזו מנופקים אוטומטית הרכיבים בשיטת `Operation Pull`, שלה ושל הפעולות הקודמות שאינן מסומנות.'}
+ ]},
+ {name:'Operation Resources',fields:[
+  {n:'Resource',he:'משאב',ex:'ASSY-LABOR',req:1,d:'המשאב שמבצע את הפעולה: עובד, מכונה או קבלן.'},
+  {n:'Basis',he:'בסיס',t:'l',ex:'Item',d:'האם השימוש במשאב תלוי בכמות.',lov:[['Item','השימוש במשאב הוא לכל יחידה מיוצרת'],['Lot','שימוש קבוע לפקודה, למשל זמן כיוון']]},
+  {n:'Usage Rate or Amount',he:'שיעור שימוש',ex:'0.25',d:'כמה מהמשאב נדרש, למשל שעות ליחידה.'},
+  {n:'Schedule',he:'תזמון',t:'l',ex:'Yes',d:'האם ואיך המשאב נכלל בתזמון הפקודה.',lov:[['Yes','המשאב נכלל בתזמון ובחישוב זמן הייצור'],['No','המשאב לא נכלל בתזמון'],['Prior','משאב הכנה שיכול לעבוד במקביל לפעולה הקודמת'],['Next','פירוק שיכול לחפוף לתחילת הפעולה הבאה']]},
+  {n:'Charge Type',he:'סוג חיוב',t:'l',ex:'WIP Move',d:'איך עלות המשאב מחויבת לפקודה.',lov:[['WIP Move','חיוב אוטומטי כשמשלימים את הפעולה'],['Manual','אין חיוב אוטומטי: מדווחים את המשאב ידנית'],['PO Receipt','חיוב בקבלת הזמנת הרכש, בלי קידום אוטומטי של הכמות'],['PO Move','חיוב בקבלת הרכש, עם קידום אוטומטי לפעולה הבאה']]}
+ ]}
+ ]},
+
+{id:'job',mod:'wip',name:'Discrete Jobs',he:'פקודת עבודה',
+ path:'Work in Process > Discrete > Discrete Jobs',
+ intro:'פקודת עבודה (`Discrete Job`) היא הוראה לייצר כמות מסוימת של מכלול עד תאריך מסוים. בפתיחת הפקודה המערכת מעתיקה אליה את העץ ואת המסלול.',
+ tabs:[
+ {name:'Job',fields:[
+  {n:'Job',he:'מספר הפקודה',ex:'WO-10452',req:1,d:'מספר הפקודה. אפשר להגדיר מספור אוטומטי לפי קידומת.'},
+  {n:'Type',he:'סוג פקודה',t:'l',ex:'Standard',d:'סוג הפקודה.',lov:[['Standard','פקודת ייצור רגילה, לפי העץ והמסלול של המכלול'],['Non-Standard','פקודה גמישה: תיקון, שיפוץ או אב-טיפוס']]},
+  {n:'Assembly',he:'מכלול',ex:'PUMP-100',req:1,d:'הפריט שמייצרים.'},
+  {n:'Class',he:'סיווג חשבונאי',ex:'Discrete',req:1,d:'סיווג חשבונאי (`WIP Accounting Class`) שקובע לאילו חשבונות נרשמות עלויות הפקודה והסטיות.'},
+  {n:'Status',he:'סטטוס',t:'l',ex:'Released',d:'מצב הפקודה. הסטטוס קובע אילו פעולות מותרות.',
+   lov:[['Unreleased','טרם שוחררה: אפשר לעדכן, אי אפשר לדווח'],['Released','זמינה לייצור: מותר לדווח עליה'],['Complete','הושלמה כל הכמות, ועדיין מקבלת דיווחים וחיובים'],['Complete-No Charges','הושלמה, וחסומה לחיובים נוספים'],['On Hold','מוקפאת: אפשר לעדכן, אי אפשר לדווח'],['Cancelled','בוטלה'],['Closed','נסגרה חשבונאית']],
+   tip:'פקודה חדשה נפתחת כ-Unreleased. רק Released ו-Complete מקבלות דיווחים. סגירת פקודות היא תהליך תקופתי חשוב: בתמחיר תקן, רק בסגירה נרשמות הסטיות.',v:1,vn:'רשימת הסטטוסים ומשמעותם אומתו מול המדריך. מועד רישום הסטיות בתמחיר תקן לא אומת.'},
+  {n:'Firm',he:'מקובעת',t:'c',ex:false,d:'פקודה מקובעת: התכנון לא יציע לשנות לה כמות או תאריך. אי אפשר לקבע פקודה מסוג Non-Standard.'},
+  {n:'Start Quantity',he:'כמות לייצור',ex:'50',req:1,d:'הכמות שהפקודה אמורה לייצר.'},
+  {n:'MRP Net Quantity',he:'כמות נטו לתכנון',ex:'50',d:'הכמות שהתכנון סופר כאספקה צפויה מהפקודה.'},
+  {n:'Start Date',he:'תאריך התחלה',ex:'23-NOV-2026',d:'מזינים תאריך התחלה או תאריך סיום, והמערכת מחשבת את השני לפי המסלול וזמני האספקה.'},
+  {n:'Completion Date',he:'תאריך סיום',ex:'30-NOV-2026',d:'התאריך שבו הפקודה אמורה להסתיים.'}
+ ]},
+ {name:'Bill',fields:[
+  {n:'Alternate',he:'עץ חלופי',ex:'',d:'אפשר לבחור עץ חלופי לפקודה הזו במקום העץ הראשי.'},
+  {n:'Supply Type',he:'שיטת אספקה',t:'l',ex:'Based on Bill',d:'ברירת המחדל משאירה לכל רכיב את השיטה שהוגדרה לו. בחירה אחרת עוקפת את השיטה של כל רכיבי הפקודה.',lov:[['Based on Bill','כל רכיב לפי השיטה שהוגדרה לו בעץ']].concat(L_SUPPLY.slice(0,4))}
+ ]},
+ {name:'Routing',fields:[
+  {n:'Completion Subinventory',he:'מחסן לדיווח גמר',ex:'FG-STORE',d:'המחסן שאליו תיכנס התוצרת הגמורה. ברירת המחדל מגיעה מהמסלול.'}
+ ]}
+ ]},
+
+{id:'wiptx',mod:'wip',name:'WIP Transactions',he:'דיווחי ייצור',
+ path:'Work in Process > Move Transactions / Material Transactions',
+ intro:'שלושת הדיווחים שמקדמים פקודה: ניפוק חומרים, תנועה בין פעולות, ודיווח גמר. כל לשונית כאן היא מסך נפרד במערכת.',
+ tabs:[
+ {name:'Move Transactions',fields:[
+  {n:'Job',he:'פקודה',ex:'WO-10452',req:1,d:'הפקודה שמדווחים עליה.'},
+  {n:'From / To Operation Seq',he:'מפעולה / לפעולה',ex:'10 > 20',d:'מאיזו פעולה לאיזו פעולה מעבירים את הכמות.'},
+  {n:'Step',he:'שלב בתוך הפעולה',t:'l',ex:'Queue',d:'המיקום של הכמות בתוך הפעולה.',lov:[['Queue','ממתין בתור לפעולה'],['Run','בעבודה'],['To Move','הושלם בפעולה, ממתין להעברה'],['Reject','נדחה, ממתין להחלטה'],['Scrap','נפסל']]},
+  {n:'Transaction Quantity',he:'כמות',ex:'50',req:1,d:'הכמות שמעבירים.'}
+ ]},
+ {name:'WIP Material Transactions',fields:[
+  {n:'Transaction Type',he:'סוג תנועה',t:'l',ex:'WIP issue',d:'כיוון התנועה בין המחסן לפקודה.',lov:[['WIP issue','ניפוק רכיב מהמחסן לפקודה'],['WIP return','החזרת רכיב מהפקודה למחסן'],['WIP negative component issue','רכיב בדרישה שלילית (תוצר לוואי) נכנס מהפקודה למלאי'],['WIP negative component return','ביטול של הקודם: הרכיב חוזר מהמלאי לפקודה']],ver:'אלה הערכים במדריך של 12.2. במדריך של 12.1 שני הראשונים נקראים `WIP component issue` ו-`WIP component return`.'},
+  {n:'Job',he:'פקודה',ex:'WO-10452',req:1,d:'הפקודה שאליה מנפקים.'},
+  {n:'Subinventory',he:'מחסן משנה',ex:'RM-STORE',d:'המחסן שממנו יוצא הרכיב.'}
+ ]},
+ {name:'Completion Transactions',fields:[
+  {n:'Transaction Type',he:'סוג תנועה',t:'l',ex:'WIP assembly completion',d:'דיווח גמר או החזרה.',lov:[['WIP assembly completion','דיווח גמר: המכלול נכנס למלאי'],['WIP assembly return','החזרת מכלול מהמלאי לפקודה']]},
+  {n:'Quantity',he:'כמות',ex:'50',req:1,d:'הכמות שמדווחים.',tip:'בדיווח גמר מנופקים אוטומטית הרכיבים בשיטת `Assembly Pull`.'}
+ ]}
+ ]},
+
+{id:'minmax',mod:'mrp',name:'Min-Max Planning',he:'תכנון Min-Max',
+ path:'Inventory > Planning > Min-Max Planning',
+ intro:'דוח שמריצים, בדרך כלל בתזמון קבוע, ושיוצר הצעות מילוי. הכלל: אם המלאי הזמין יחד עם האספקה הפתוחה קטן מהמינימום, מזמינים עד למקסימום.',
+ tabs:[{name:'Parameters',fields:[
+  {n:'Planning Level',he:'רמת תכנון',t:'l',ex:'Organization',d:'האם לתכנן את כל הארגון או מחסן משנה אחד.',lov:[['Organization','תכנון לכל הארגון, לפי מאפייני הפריט'],['Subinventory','תכנון למחסן משנה אחד, לפי הגדרות פריט-מחסן']]},
+  {n:'Item Selection',he:'בחירת פריטים',t:'l',ex:'Items under minimum quantity',d:'אילו פריטים יופיעו בדוח.',lov:[['Items under minimum quantity','רק פריטים שירדו מתחת למינימום'],['Items over maximum quantity','רק פריטים שעלו מעל המקסימום'],['All min-max planned items','כל הפריטים שמתוכננים ב-Min-Max']],v:1,vn:'שלוש האפשרויות אומתו מול המדריך. הנוסח המדויק שלהן במסך, ושם הפרמטר עצמו, לא אומתו.'},
+  {n:'Demand Cutoff Date',he:'תאריך חיתוך דרישות',ex:'30-NOV-2026',d:'הדוח כולל דרישות עד התאריך הזה.'},
+  {n:'Supply Cutoff Date',he:'תאריך חיתוך אספקות',ex:'30-NOV-2026',d:'החישוב כולל הזמנות אספקה פתוחות עד התאריך הזה.'},
+  {n:'Restock',he:'יצירת מילוי',t:'l',ex:'Yes',d:'האם ליצור מסמכי מילוי בפועל או רק דוח.',lov:[['Yes','יוצר דרישות לפריטים קנויים ופקודות לא משוחררות לפריטים מיוצרים'],['No','מפיק דוח בלבד']],tip:'ברמת הארגון, המערכת מחליטה אם ליצור דרישה או פקודה לפי `Make or Buy` שבפריט.'},
+  {n:'Net WIP Demand',he:'קיזוז דרישות ייצור',t:'l',ex:'Yes',d:'האם להפחית מהמלאי הזמין את דרישות הרכיבים של פקודות עבודה.',lov:[['Yes','דרישות הייצור מופחתות מהמלאי הזמין'],['No','מתעלמים מדרישות הייצור']],tip:'אי אפשר לבחור Yes בתכנון ברמת מחסן משנה: שם התכנון לא מתחשב בפקודות עבודה, לא כאספקה ולא כדרישה.'},
+  {n:'Include PO Supply',he:'כולל אספקת רכש',t:'l',ex:'Yes',d:'האם לספור הזמנות רכש פתוחות כאספקה.',lov:[['Yes','הזמנות רכש פתוחות נספרות כאספקה'],['No','מתעלמים מהזמנות רכש פתוחות']],v:1,vn:'המדריך מתאר פרמטרים להכללת אספקת רכש, אספקת ייצור ומחסנים שאינם Nettable. שם הפרמטר המדויק במסך לא אומת.'}
+ ]}]},
+
+{id:'mrpplan',mod:'mrp',name:'MRP Plan Options',he:'אפשרויות תוכנית MRP',
+ path:'Material Planning > MRP > Options',pnote:'נתיב התפריט למסך הזה לא אומת מול המדריך.',
+ intro:'התהליך: דרישות (תחזיות והזמנות) נטענות לתוכנית הדרישות (MDS), מריצים תוכנית MRP, המתכנן בוחן את ההצעות ב-Planner Workbench ומשחרר אותן לפקודות עבודה ולדרישות רכש.',
+ tabs:[{name:'Plan Options',fields:[
+  {n:'Schedule',he:'תוכנית דרישות',ex:'MDS-PROD',req:1,d:'תוכנית הדרישות (`MDS`) שעליה התוכנית מבוססת.',v:1,vn:'שם השדה במסך לא אומת מול המדריך.'},
+  {n:'Overwrite',he:'דריסה',t:'l',ex:'All',d:'מה קורה להזמנות המתוכננות מהריצה הקודמת.',lov:[['All','דורס את כל ההזמנות המתוכננות, כולל המקובעות'],['Outside planning time fence','דורס הזמנות מתוכננות רק מעבר לגדר הזמן לתכנון'],['None','לא דורס הזמנות מתוכננות מקובעות']],tip:'זהירות עם All: האפשרות דורסת גם הזמנות מתוכננות שהמתכנן קיבע.'},
+  {n:'Append Planned Orders',he:'הוספת הזמנות מתוכננות',t:'c',ex:true,d:'התכנון מוסיף הזמנות מתוכננות חדשות לתוכנית הקיימת.'},
+  {n:'Demand Time Fence Control',he:'הפעלת גדר דרישה',t:'c',ex:true,d:'קובע אם התכנון מתחשב בתחזית שבתוך גדר הזמן לדרישה.'},
+  {n:'Planning Time Fence Control',he:'הפעלת גדר תכנון',t:'c',ex:true,d:'קובע אם התכנון מכבד את גדרות הזמן לתכנון שהוגדרו בפריטים.'},
+  {n:'Net WIP',he:'קיזוז פקודות עבודה',t:'c',ex:true,d:'התכנון מתחשב בפקודות עבודה, רגילות ולא רגילות.'},
+  {n:'Net Purchases',he:'קיזוז רכש',t:'c',ex:true,d:'התכנון מתחשב בדרישות רכש מאושרות.'},
+  {n:'Net Reservations',he:'קיזוז שריונים',t:'c',ex:true,d:'התכנון מתחשב במלאי ששוריין להזמנה מסוימת.'},
+  {n:'Plan Safety Stock',he:'תכנון מלאי ביטחון',t:'c',ex:true,d:'התכנון מחשב מלאי ביטחון לכל פריט.'},
+  {n:'Planned Items',he:'פריטים מתוכננים',t:'l',ex:'All planned items',d:'אילו פריטים נכללים בריצה.',lov:[['All planned items','כל הפריטים המתוכננים, גם כאלה שאינם רכיב באף עץ'],['Demand schedule items only','רק פריטים שמופיעים בתוכנית הדרישות'],['Supply schedule items only','רק פריטים שמופיעים בתוכנית האספקה'],['Demand and supply schedule items','פריטים משתי התוכניות']]}
+ ]}]}
+];
+
+/* flat field index */
+const FIELDS=[];
+SCREENS.forEach(scr=>scr.tabs.forEach((tab,ti)=>tab.fields.forEach(f=>{
+  f.t=f.t||'x'; f.id=scr.id+':'+ti+':'+slug(f.n);
+  FIELDS.push({id:f.id,scr:scr,tab:tab,ti:ti,f:f});
+})));
+const BYID={}; FIELDS.forEach(x=>BYID[x.id]=x);
+const LOVSETS=FIELDS.filter(x=>x.f.lov&&x.f.lov.length>=3);
+
+const LEVELS=[
+ ['Business Group','קבוצה עסקית','הרמה העליונה. משמשת בעיקר את משאבי האנוש.','קבוצת אלון'],
+ ['Ledger','ספר חשבונות','מטבע, לוח תקופות ומבנה חשבונות. חברות שחולקות את שלושתם יכולות לחלוק ספר.','ספר ראשי בש"ח'],
+ ['Legal Entity','ישות משפטית','חברה רשומה שמדווחת לרשויות. בדרך כלל כל חברה בת היא ישות משפטית נפרדת.','אלון צפון בע"מ'],
+ ['Operating Unit','יחידה תפעולית','מפרידה את הרכש, המכירות, הספקים והלקוחות. הזמנות רכש ומכירה שייכות ליחידה תפעולית.','OU צפון'],
+ ['Inventory Organization','ארגון מלאי','מפעל או מרכז לוגיסטי. כאן חיים המלאי, עצי המוצר, פקודות העבודה והתכנון.','N1 מפעל צפון'],
+ ['Subinventory','מחסן משנה','חלוקה בתוך הארגון: חומרי גלם, תוצרת גמורה, הסגר.','RM-STORE'],
+ ['Locator','איתור','המיקום המדויק במחסן: שורה, מדף, תא.','A.03.2']
+];
+
+/* k: g = whole system, c = your choice (Master/Org), o = per organization, l = link between orgs */
+const SHARED=[
+ ['g','מספר הפריט (המק"ט)','תמיד אחיד. פריט מוקם בארגון האב ומשויך לארגוני הבת. אי אפשר להקים פריט ישירות בארגון בת.'],
+ ['c','מאפייני הפריט','לכל מאפיין בוחרים במסך `Item Attribute Controls` אם הוא Master (אחיד) או Org (עצמאי). זו ההורשה העיקרית. לחלק מהמאפיינים המערכת קובעת רמה אחת בלבד.'],
+ ['g','יחידות מידה והמרות כלליות','מוגדרות פעם אחת ומשמשות את כל הארגונים.'],
+ ['g','קודי סטטוס לפריט','רשימה אחת לכל המערכת.'],
+ ['c','קטגוריות','לכל סט קטגוריות (`Category Set`) קובעים רמת שליטה: ברמת Master לפריט אותה קטגוריה בכל הארגונים, וברמת Org הקטגוריה יכולה להיות שונה בכל ארגון.'],
+ ['g','תבניות פריט','תבנית (`Item Template`) ממלאת עשרות מאפיינים בלחיצה. תבנית בלי קוד ארגון זמינה בכל הארגונים, ואפשר גם להגביל תבנית לארגון אחד.'],
+ ['o','מהדורות פריט','מנוהלות לכל ארגון בנפרד.',1],
+ ['o','עלויות פריט','לכל ארגון עלות משלו. חריג: בתמחיר תקן אפשר לשתף עלויות מארגון האב.',1],
+ ['o','מחסני משנה ואיתורים','כל ארגון מגדיר את המחסנים שלו.'],
+ ['l','עצי מוצר','מוגדרים לכל ארגון. שיתוף בין חברות נעשה דרך `Common Bill`, בין ארגונים שחולקים אותו ארגון אב.'],
+ ['o','מסלולים, מחלקות ומשאבים','לכל ארגון בנפרד. מסלול משותף (`Common Routing`) אפשרי רק בתוך אותו ארגון.'],
+ ['o','פקודות עבודה והגדרות הייצור','פרמטרים וסיווגים חשבונאיים מוגדרים לכל ארגון.'],
+ ['o','מתכננים ותוכניות MRP','לכל ארגון בנפרד.'],
+ ['g','לוח ימי עבודה','מוגדר פעם אחת, ומשויך לכל ארגון בפרמטרים שלו.'],
+ ['l','העברות מלאי בין החברות','מוגדרות במסך `Shipping Networks`: בין אילו ארגונים, ובאיזו שיטה.'],
+ ['g','ספקים ולקוחות','מחוץ למודולים שבחרתם, וטוב לדעת: רשומת הספק או הלקוח משותפת, והאתרים שלה מוגדרים לכל יחידה תפעולית.',1]
+];
+const SHK={g:['כל המערכת','g'],c:['Master או Org','m'],o:['לכל ארגון','o'],l:['חיבור בין ארגונים','f']};
+
+const GLOSS=[
+ ['Responsibility','תחום אחריות','אוסף התפריטים וההרשאות שבוחרים בכניסה למערכת. הוא קובע אילו מסכים רואים ובאיזה ארגון עובדים.'],
+ ['Navigator','חלון הניווט','חלון התפריט הראשי של Forms, שממנו פותחים מסכים.'],
+ ['LOV (List of Values)','רשימת ערכים','רשימת הערכים המותרים בשדה. נפתחת מכפתור שלוש הנקודות שבקצה השדה.'],
+ ['Key Flexfield','שדה גמיש','שדה שבנוי ממקטעים שהחברה מגדירה, כמו מספר פריט, איתור או חשבון.'],
+ ['Descriptive Flexfield','שדה תיאורי גמיש','שדות נוספים שהחברה מוסיפה למסך. מופיעים כסוגריים מרובעים בקצה המסך.'],
+ ['Profile Option','אפשרות פרופיל','הגדרה שמשנה את התנהגות המערכת ברמת אתר, אחריות או משתמש.'],
+ ['Concurrent Request','בקשה ברקע','ריצה של דוח או תהליך שמתבצעת ברקע.'],
+ ['Inventory Organization','ארגון מלאי','מפעל או מחסן שמנהל מלאי. היחידה הבסיסית של המלאי, הייצור והתכנון.'],
+ ['Item Master Organization','ארגון האב לפריטים','הארגון שבו מגדירים פריטים לפני שמשייכים אותם לארגוני הבת.'],
+ ['Organization Assignment','שיוך לארגון','הפעולה שמפעילה פריט בארגון בת.'],
+ ['Organization Items','פריטי ארגון','המסך שבו מעדכנים מאפיינים ברמת Org עבור ארגון מסוים.'],
+ ['Item Template','תבנית פריט','סט מוכן של ערכי מאפיינים שמחילים על פריט חדש.'],
+ ['Item Status','סטטוס פריט','קוד ששולט במאפייני הסטטוס של הפריט.'],
+ ['Category Set','סט קטגוריות','שיטת סיווג של פריטים, למשל לרכש, למלאי או לתכנון.'],
+ ['UOM (Unit of Measure)','יחידת מידה','היחידה שבה סופרים פריט.'],
+ ['Subinventory','מחסן משנה','חלוקה פיזית או לוגית של המלאי בתוך ארגון.'],
+ ['Locator','איתור','מיקום מדויק בתוך מחסן משנה.'],
+ ['On-hand','יתרת מלאי','הכמות שנמצאת פיזית במלאי.'],
+ ['Reservation','שריון','הקצאת מלאי לדרישה מסוימת.'],
+ ['Move Order','הוראת העברה','מסמך להעברת מלאי בתוך הארגון.'],
+ ['Lot','מנה (אצווה)','קבוצת יחידות שיוצרו או התקבלו יחד ומזוהות במספר אחד.'],
+ ['Serial Number','מספר סידורי','מזהה ייחודי של יחידה בודדת.'],
+ ['Revision','מהדורה','גרסה של פריט או של עץ מוצר.'],
+ ['Intransit','מלאי בדרך','מלאי שיצא מארגון אחד וטרם התקבל בארגון השני.'],
+ ['Internal Requisition','דרישה פנימית','בקשה לאספקה מארגון אחר בקבוצה.'],
+ ['BOM (Bill of Material)','עץ מוצר','רשימת הרכיבים והכמויות שמרכיבים מכלול.'],
+ ['Common Bill','עץ משותף','עץ שמפנה לעץ אחר במקום להחזיק רכיבים משלו.'],
+ ['Phantom','פנטום','מכלול מדומה שלא פותחים לו פקודה ולא מאחסנים אותו.'],
+ ['Routing','מסלול ייצור','רצף הפעולות לייצור מכלול.'],
+ ['Standard Operation','פעולה סטנדרטית','תבנית של פעולה לשימוש חוזר במסלולים.'],
+ ['Department','מחלקה','אזור ייצור שמחזיק משאבים.'],
+ ['Resource','משאב','עובד, מכונה או שירות שמבצעים פעולה ועולים כסף.'],
+ ['Discrete Job','פקודת עבודה','הוראה לייצר כמות מסוימת של מכלול.'],
+ ['WIP Accounting Class','סיווג חשבונאי לייצור','קובע את חשבונות העלות והסטיות של פקודה.'],
+ ['Backflush','ניפוק אוטומטי','ניפוק רכיבים שהמערכת מבצעת לבד בעת דיווח.'],
+ ['Move Transaction','דיווח תנועה','קידום כמות מפעולה לפעולה בפקודה.'],
+ ['Completion','דיווח גמר','הכנסת המכלול המוגמר למלאי.'],
+ ['Outside Processing (OSP)','עבודת חוץ','פעולה שקבלן משנה מבצע, ומנוהלת דרך הזמנת רכש.'],
+ ['Cost Rollup','גלגול עלויות','חישוב עלות מכלול מעלויות הרכיבים והפעולות.'],
+ ['MDS (Master Demand Schedule)','תוכנית דרישות אב','ריכוז הדרישות, תחזיות והזמנות, שמזין את התכנון.'],
+ ['MPS (Master Production Schedule)','תוכנית אב לייצור','תוכנית הייצור של המוצרים המרכזיים.'],
+ ['MRP','תכנון דרישות חומרים','החישוב שמציע מה לייצר ומה לקנות, כמה ומתי.'],
+ ['Planner Workbench','שולחן המתכנן','המסך שבו המתכנן בוחן את הצעות התכנון ומשחרר אותן.'],
+ ['Planned Order','הזמנה מתוכננת','הצעה של התכנון לפקודת עבודה או לדרישת רכש.'],
+ ['Time Fence','גדר זמן','טווח זמן שבו התכנון מוגבל, כדי לשמור על יציבות.'],
+ ['Safety Stock','מלאי ביטחון','מלאי שמחזיקים כנגד אי-ודאות.'],
+ ['Lead Time','זמן אספקה','הזמן מרגע ההזמנה ועד שהפריט זמין.'],
+ ['Min-Max','מינימום-מקסימום','שיטת מילוי פשוטה לפי רף תחתון ורף עליון.']
+];
+
+/* hand-written questions. t = topic */
+const QUIZ=[
+ {t:'org',q:'ההנהלה רוצה שתיאור הפריט יהיה זהה בכל חברות הקבוצה. מה מגדירים?',o:['במסך Item Attribute Controls: Description ברמת Master','במסך Organization Parameters: Locator Control','בכל חברה מקלידים את אותו תיאור ידנית','במסך Shipping Networks'],a:0,e:'מאפיין ברמת Master מחזיק ערך אחד לכל הארגונים, ומתעדכן רק במסך Master Items.'},
+ {t:'org',q:'מפעל דרום מייצר את המשאבה, ומפעל צפון קונה אותה. איזו רמת שליטה מתאימה ל-`Make or Buy`?',o:['Org Level','Master Level','אין הבדל','אי אפשר לשלוט במאפיין הזה'],a:0,e:'כשהערך צריך להיות שונה בין החברות, המאפיין חייב להיות ברמת Org.'},
+ {t:'org',q:'משתמש במפעל צפון מנסה לשנות במסך Organization Items שדה שנשלט ברמת Master. מה יקרה?',o:['השדה חסום לעדכון שם. מעדכנים אותו ב-Master Items, והערך חל על כל הארגונים','הערך ישתנה רק במפעל צפון','הערך ישתנה בכל הארגונים','הפריט יימחק מהארגון'],a:0,e:'מאפיין ברמת Master מוצג בארגון הבת לקריאה בלבד.'},
+ {t:'org',q:'פריט הוקם בארגון האב, אבל במפעל צפון הוא לא מופיע בכלל ברשימת הפריטים. מה בודקים קודם?',o:['האם הפריט שויך לארגון (Organization Assignment)','האם יש לו עץ מוצר','האם הוגדר לו מתכנן','האם יש לו מחיר מחירון'],a:0,e:'פריט קיים בארגון בת רק אחרי ששויך אליו.'},
+ {t:'org',q:'כמה ארגוני אב לפריטים (Item Master) מקובל להגדיר לקבוצת חברות?',o:['אחד לכל הקבוצה','אחד לכל חברה בת','אחד לכל מחסן משנה','אין צורך בארגון אב'],a:0,e:'ארגון אב אחד מבטיח מק"ט אחיד ומאפשר הורשה, העברות בין ארגונים ועצים משותפים.'},
+ {t:'org',q:'מה ההבדל בין Operating Unit ל-Inventory Organization?',o:['Operating Unit מפרידה רכש, מכירות, ספקים ולקוחות. Inventory Organization מנהל מלאי, ייצור ותכנון','אין הבדל, אלה שני שמות לאותו דבר','Operating Unit הוא מחסן משנה גדול','Inventory Organization שייך למשאבי אנוש'],a:0,e:'ארגון מלאי משויך ליחידה תפעולית, שמשויכת לישות משפטית ולספר.'},
+ {t:'org',q:'ב-Status Setting נבחר `Sets Value` למאפיין Purchasable. מה המשמעות?',o:['הסטטוס קובע את הערך, ואי אפשר לשנות אותו ידנית בפריט','הסטטוס נותן ברירת מחדל שאפשר לשנות','הסטטוס לא משפיע על המאפיין','המאפיין עובר לרמת Org'],a:0,e:'`Sets Value` נותן לסטטוס שליטה מלאה. `Defaults Value` נותן רק ערך התחלתי.'},
+ {t:'org',q:'איזה מהמאפיינים האלה נשלט תמיד ברמת Org, בלי אפשרות בחירה?',o:['Planner','BOM Item Type','Lot Control','Make or Buy'],a:0,e:'המערכת קובעת ש-`Planner` נשלט ברמת Org בלבד. `BOM Item Type` קבוע ברמת Master, ואת השניים האחרים בוחרים.'},
+ {t:'org',q:'איזה מהמאפיינים האלה נשלט תמיד ברמת Master, בלי אפשרות בחירה?',o:['BOM Item Type','Planner','Min-Max Minimum Quantity','WIP Supply Type'],a:0,e:'`BOM Item Type` קבוע ברמת Master. `Planner` קבוע ברמת Org, ואת השניים האחרים בוחרים.'},
+ {t:'org',q:'שתי חברות בנות צריכות להעביר מלאי ביניהן, והמלאי נמצא יומיים בדרך. מה מגדירים ב-Shipping Networks?',o:['Transfer Type = Intransit','Transfer Type = Direct','Locator Control = None','Costing Method = Average'],a:0,e:'ב-`Intransit` המלאי יוצא למלאי בדרך ונקלט בקבלה נפרדת. `Direct` מעביר מיד.'},
+ {t:'org',q:'איפה מוגדרות יחידות המידה?',o:['פעם אחת, לכל המערכת','בכל ארגון מלאי בנפרד','בכל מחסן משנה','בכל פקודת עבודה'],a:0,e:'יחידות מידה והמרות כלליות משותפות לכל הארגונים.'},
+ {t:'org',q:'במסך של Forms מופיע שדה בצבע צהוב. מה זה אומר?',o:['שדה חובה','שדה לקריאה בלבד','שדה עם שגיאה','שדה שנשלט ברמת Master'],a:0,e:'ב-Oracle Forms שדות חובה מסומנים בצהוב.'},
+ {t:'inv',q:'מה ההבדל בין Stockable ל-Transactable?',o:['Stockable: אפשר להחזיק במלאי. Transactable: אפשר לבצע תנועות, ודורש Stockable','אין הבדל','Transactable קודם ל-Stockable','שניהם שייכים למודול הרכש'],a:0,e:'השרשרת היא Inventory Item, אחריו Stockable, ואחריו Transactable.'},
+ {t:'inv',q:'מחסן הסגר לא אמור להיחשב כמלאי זמין בתכנון. איזה מאפיין של מחסן המשנה צריך להיות כבוי?',o:['Nettable','Asset Subinventory','Quantity Tracked','Allow Reservation'],a:0,e:'מחסן שאינו Nettable לא נספר כזמין בתכנון. ב-R12 המאפיין נקבע דרך סטטוס החומר (Status) של המחסן.'},
+ {t:'inv',q:'מחסן משנה שהשדה Asset Subinventory לא מסומן בו הוא:',o:['מחסן הוצאה: ערך המלאי שבו אינו מוחזק במאזן','מחסן שאין בו מעקב כמויות','מחסן קבלה','מחסן שחסום לתנועות'],a:0,e:'במחסן נכס ערך המלאי מוחזק במאזן. במחסן הוצאה לא.'},
+ {t:'inv',q:'בארגון נבחר Locator Control = `Determined at subinventory level`, ובמחסן המשנה נבחר `Item level`. מי מחליט אם נדרש איתור?',o:['מאפיין Locator Control שבפריט','פרמטרי הארגון','המשתמש בכל תנועה','אף אחד, אין איתורים'],a:0,e:'ההחלטה יורדת מהארגון למחסן המשנה, וממנו לפריט.'},
+ {t:'inv',q:'בפריט נבחר Serial Generation = `At Sales Order Issue`. מה המשמעות?',o:['המספר הסידורי נקבע רק בניפוק ללקוח','חובה לציין מספר סידורי כבר בקבלה','המספרים מוגדרים מראש','אין מספרים סידוריים'],a:0,e:'בשיטה הזו אין מעקב סידורי בתוך המלאי, רק ביציאה ללקוח.'},
+ {t:'inv',q:'איזה שדה במסך הפריט הוא סיווג לדיווח בלבד, ואינו משנה את התנהגות הפריט?',o:['User Item Type','BOM Item Type','Make or Buy','Lot Control'],a:0,e:'את ההתנהגות קובעים המאפיינים. User Item Type משמש לסינון ולדוחות.'},
+ {t:'bom',q:'שתי חברות בנות מייצרות את אותו מוצר ורוצות עץ מוצר אחד שמנוהל מרכזית. מה הפתרון?',o:['Common Bill: העץ בחברה אחת מפנה לעץ של השנייה','להעתיק את העץ ידנית בכל שינוי','להעביר את המאפיין BOM Allowed לרמת Master','אי אפשר, עץ מוגדר רק בארגון האב'],a:0,e:'עץ משותף מפנה לעץ המקור, כך ששינוי במקור משתקף אצל כולם.'},
+ {t:'bom',q:'רכיב בעץ הוגדר עם Supply Type = `Assembly Pull`. מתי הוא מנופק?',o:['אוטומטית, כשמדווחים גמר של המכלול','ידנית, לפני תחילת הייצור','אוטומטית, בהשלמת פעולה במסלול','הוא לא מנופק בכלל'],a:0,e:'`Assembly Pull` מנפק בדיווח גמר. `Operation Pull` מנפק בהשלמת פעולה.'},
+ {t:'bom',q:'מהו רכיב מסוג `Phantom`?',o:['מכלול מדומה: לא פותחים לו פקודה, ורכיביו נפתחים לפקודת האב','רכיב שמסופק על ידי קבלן משנה','רכיב שלא נכלל בתמחיר','רכיב שנגמר לו התוקף'],a:0,e:'פנטום חוסך פקודות ואחסון לתת-מכלולים שמורכבים על הקו.'},
+ {t:'bom',q:'רכיב הוחלף ברכיב חדש. מה עושים לרכיב הישן בעץ?',o:['סוגרים לו תאריך תוקף (To)','מוחקים את השורה','משנים לו כמות לאפס','מבטלים את הפריט'],a:0,e:'סגירת תוקף שומרת את ההיסטוריה של העץ.'},
+ {t:'bom',q:'משאב במסלול הוגדר עם Basis = `Lot`. מה המשמעות?',o:['השימוש במשאב קבוע לפקודה, בלי קשר לכמות','השימוש במשאב הוא לכל יחידה','המשאב לא מחויב','המשאב הוא קבלן משנה'],a:0,e:'`Lot` מתאים לזמן כיוון. `Item` מתאים לזמן עבודה ליחידה.'},
+ {t:'bom',q:'מחלקות ומשאבים מוגדרים:',o:['לכל ארגון מלאי בנפרד','פעם אחת לכל המערכת','רק בארגון האב','בכל פקודת עבודה'],a:0,e:'לכן גם מסלול הייצור מוגדר לכל ארגון.'},
+ {t:'bom',q:'חברת בת רוצה שהמסלול שלה יפנה למסלול משותף (Common Routing) שנמצא בארגון של חברה אחרת. האם זה אפשרי?',o:['לא. מסלול משותף עובד רק בתוך אותו ארגון','כן, בתנאי ששני הארגונים חולקים אותו ארגון אב','כן, תמיד','רק אם המסלול ריק'],a:0,e:'זה ההבדל מעץ מוצר: עץ משותף יכול לחצות ארגונים, ומסלול משותף לא.'},
+ {t:'bom',q:'במסלול, איזה שילוב של Count Point ו-Autocharge אינו אפשרי?',o:['Count Point מסומן ו-Autocharge לא מסומן','שניהם מסומנים','שניהם לא מסומנים','Count Point לא מסומן ו-Autocharge מסומן'],a:0,e:'אי אפשר לסמן Count Point בלי Autocharge. שלושת השילובים האחרים אפשריים.'},
+ {t:'wip',q:'פקודת עבודה נפתחה, ואי אפשר לדווח עליה תנועות. מה הסטטוס הסביר?',o:['Unreleased','Released','Complete','Firm'],a:0,e:'פקודה חדשה נפתחת כ-Unreleased: אפשר לעדכן אותה, אבל לא לדווח עליה. רק Released ו-Complete מקבלות דיווחים.'},
+ {t:'wip',q:'מה עושה הסימון Firm בפקודת עבודה?',o:['התכנון לא יציע לשנות לה כמות או תאריך','הפקודה נסגרת חשבונאית','הפקודה משוחררת לרצפה','הרכיבים מנופקים אוטומטית'],a:0,e:'פקודה מקובעת נשארת כפי שהיא בריצות התכנון.'},
+ {t:'wip',q:'איזה שלב (Step) בתוך פעולה מציין שהכמות הושלמה וממתינה להעברה?',o:['To Move','Queue','Run','Scrap'],a:0,e:'הסדר הרגיל הוא Queue, אחריו Run, ואחריו To Move.'},
+ {t:'wip',q:'בפקודה נבחר Supply Type = `Based on Bill`. איך הרכיבים מסופקים?',o:['כל רכיב לפי השיטה שהוגדרה לו בעץ','כולם בניפוק ידני','כולם בניפוק אוטומטי','אף רכיב לא מנופק'],a:0,e:'זו ברירת המחדל. בחירה אחרת עוקפת את כל רכיבי הפקודה.'},
+ {t:'mrp',q:'מלאי זמין 40, הזמנות רכש פתוחות 10, מינימום 60, מקסימום 100. מה יציע תכנון Min-Max?',o:['להזמין 50','להזמין 60','להזמין 100','לא להזמין'],a:0,e:'40 + 10 = 50, מתחת למינימום 60. מזמינים עד למקסימום: 100 − 50 = 50.'},
+ {t:'mrp',q:'בפריט: Fixed = 2, Variable = 0.5. מה זמן הייצור של פקודה ל-10 יחידות?',o:['7 ימים','2.5 ימים','20 ימים','12 ימים'],a:0,e:'Fixed + Variable × כמות = 2 + 0.5 × 10 = 7.'},
+ {t:'mrp',q:'בפריט נבחר Inventory Planning Method = Min-max, ו-Planning Method = Not planned. איך הפריט מתוכנן?',o:['ב-Min-Max בלבד, ולא ב-MRP','ב-MRP בלבד','בשתי השיטות','הפריט לא מתוכנן בכלל'],a:0,e:'אלה שני שדות נפרדים, בשתי לשוניות נפרדות.'},
+ {t:'mrp',q:'מה קורה בתוך Demand Time Fence?',o:['התכנון מתעלם מתחזית ומתחשב רק בהזמנות בפועל','התכנון לא יוצר הזמנות מתוכננות חדשות','הזמנות משוחררות אוטומטית','התכנון מתעלם ממלאי הביטחון'],a:0,e:'גדר הדרישה מונעת ייצור לפי תחזית שכבר לא תתממש.'},
+ {t:'mrp',q:'מה קורה בתוך Planning Time Fence?',o:['התכנון אינו משנה את תוכנית החומרים הקיימת','התכנון מתעלם מתחזית','כל הפקודות נסגרות','המלאי לא נספר'],a:0,e:'גדר התכנון שומרת על יציבות רצפת הייצור בטווח הקרוב.'},
+ {t:'mrp',q:'בפריט הוגדר Fixed Lot Multiplier = 10, והתכנון צריך 34 יחידות. מה תהיה כמות ההזמנה?',o:['40','34','30','10'],a:0,e:'הכמות מעוגלת כלפי מעלה לכפולה של 10.'}
+];
+const TOPICS={all:'כל הנושאים',org:MODS.org,inv:MODS.inv,bom:MODS.bom,wip:MODS.wip,mrp:MODS.mrp};
+
+/* ================= state ================= */
+const KEY='ebsTrainer.v1';
+let S={seen:{},box:{},lov:{},mis:{},quiz:{n:0,c:0},last:{scr:'item',tab:0}};
+try{const r=localStorage.getItem(KEY); if(r){const o=JSON.parse(r); if(o&&typeof o==='object') S=Object.assign(S,o);}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} drawProg();}
+const MISSIONS=[
+ ['m1','עדכנו את תיאור הפריט כך שישתנה בכל החברות בבת אחת.','התיאור נשלט ברמת Master. בחרו בחברת האם (M1) ושנו אותו שם.'],
+ ['m2','נסו לשנות את סוג הפריט (User Item Type) מתוך מפעל צפון (N1).','בחרו ב-N1 ולחצו על השדה User Item Type.'],
+ ['m3','מפעל דרום (S1) מפסיק לייצר את המשאבה ומתחיל לקנות אותה. עדכנו זאת בלי לשנות את שאר החברות.','בחרו ב-S1 ושנו את Make or Buy. המאפיין ברמת Org, ולכן רק S1 ישתנה.'],
+ ['m4','ההנהלה החליטה: ניהול מנות (Lot Control) יהיה אחיד בכל הקבוצה. כרגע כל חברה קובעת לעצמה.','שנו את רמת השליטה של Lot Control ל-Master.'],
+ ['m5','מרכז ההפצה (D1) מתחיל להחזיק את המשאבה. שייכו אליו את הפריט.','בחרו ב-D1 ולחצו על שיוך הפריט.'],
+ ['m6','ההנהלה מבקשת מתכנן אחד לכל הקבוצה. נסו להעביר את Planner לרמת Master.','לחצו על Master ליד השדה Planner, וקראו את ההסבר.']
+];
+function total(){return FIELDS.length+MISSIONS.length+LOVSETS.length;}
+function done(){
+  return FIELDS.filter(x=>S.seen[x.id]).length+MISSIONS.filter(m=>S.mis[m[0]]).length+LOVSETS.filter(x=>S.lov[x.id]).length;
+}
+function drawProg(){ $('#prog').textContent='התקדמות '+Math.round(done()/total()*100)+'%'; }
+let toastT;
+function toast(msg){const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>{t.hidden=true;},2600);}
+
+/* ================= home ================= */
+const PATH=[
+ {t:'המבנה הארגוני',d:'מקבוצה עסקית ועד איתור: איך חברת אם וחברות בנות מיוצגות במערכת.',go:'inherit',scr:['orgparams','shipnet']},
+ {t:'הורשה: Master מול Org',d:'סימולטור שמראה מה עובר מחברת האם לבנות, ומה כל חברה קובעת לעצמה.',go:'inherit',scr:['attrcontrols'],mis:1},
+ {t:'מסך הפריט',d:'תשע הלשוניות החשובות של Master Item, שדה אחרי שדה.',scr:['item']},
+ {t:'מחסנים ואיתורים',d:'מחסני משנה, והשדות שקובעים מה נספר, מה מוערך ומה זמין לתכנון.',scr:['subinv']},
+ {t:'עצי מוצר ומסלולים',d:'רכיבים, שיטות אספקה, פעולות ומשאבים.',scr:['bom','routing']},
+ {t:'פקודות עבודה',d:'פתיחה, סטטוסים, ושלושת הדיווחים שמקדמים פקודה.',scr:['job','wiptx']},
+ {t:'תכנון',d:'Min-Max, גדרות זמן ואפשרויות הריצה של MRP.',scr:['minmax','mrpplan']}
+];
+function stepPct(p){
+  const fs=FIELDS.filter(x=>p.scr.indexOf(x.scr.id)>=0);
+  let n=fs.length, c=fs.filter(x=>S.seen[x.id]).length;
+  if(p.mis){n+=MISSIONS.length; c+=MISSIONS.filter(m=>S.mis[m[0]]).length;}
+  return n?Math.round(c/n*100):0;
+}
+function vHome(){
+  const seen=FIELDS.filter(x=>S.seen[x.id]).length;
+  const mastered=FIELDS.filter(x=>(S.box[x.id]||0)>=3).length;
+  const acc=S.quiz.n?Math.round(S.quiz.c/S.quiz.n*100)+'%':'–';
+  main.innerHTML=`<div class="view">
+   <section class="hero stack">
+    <h1>ללמוד ליישם Oracle EBS, שדה אחרי שדה</h1>
+    <p class="lead">מלאי ותפ"י בקבוצה של חברת אם וחברות בנות: מה כל שדה עושה, אילו ערכים אפשר לבחור בו, ומה עובר בהורשה מחברת האם.</p>
+   </section>
+   <section class="stack">
+    <h2>מסלול הלמידה</h2>
+    <ol class="path">${PATH.map((p,i)=>{const pc=stepPct(p);return `<li>
+      <div><h3>${esc(p.t)}</h3><p class="muted small">${esc(p.d)}</p><div class="bar" role="img" aria-label="${pc}% הושלמו"><i style="width:${pc}%"></i></div></div>
+      <button class="btn ${pc>=100?'ghost':''} sm" data-step="${i}">${pc>=100?'חזרה':pc>0?'המשך':'התחלה'}</button></li>`;}).join('')}</ol>
+   </section>
+   <section class="stats" aria-label="התקדמות">
+    <div class="stat"><b>${seen}/${FIELDS.length}</b><span class="small muted">שדות שנפתחו</span></div>
+    <div class="stat"><b>${MISSIONS.filter(m=>S.mis[m[0]]).length}/${MISSIONS.length}</b><span class="small muted">משימות הורשה</span></div>
+    <div class="stat"><b>${mastered}</b><span class="small muted">כרטיסיות שנשלטו</span></div>
+    <div class="stat"><b>${acc}</b><span class="small muted">דיוק בחידונים</span></div>
+   </section>
+   <section class="card stack">
+    <h2>איך קוראים מסך של Forms</h2>
+    <ul class="conv">
+     <li><span class="key y">Field</span><span>שדה צהוב הוא שדה חובה.</span></li>
+     <li><span class="key">…</span><span>כפתור שלוש הנקודות בקצה השדה פותח את רשימת הערכים (LOV). אפשר גם ב-${en('Ctrl+L')}.</span></li>
+     <li><span class="key">F11</span><span>מעבר למצב שאילתה. מקלידים ערך חיפוש, למשל ${en('PUMP%')}, ומריצים ב-${en('Ctrl+F11')}.</span></li>
+     <li><span class="key">Ctrl+S</span><span>שמירה. בלי שמירה, השינוי לא נכנס למערכת.</span></li>
+     <li><span class="key">Ctrl+K</span><span>מציג את רשימת הקיצורים המלאה במערכת שלכם. הקיצורים כאן הם ברירת המחדל, ואצלכם הם עשויים להיות שונים.</span></li>
+    </ul>
+   </section>
+  </div>`;
+  $$('[data-step]',main).forEach(b=>b.onclick=()=>{
+    const p=PATH[+b.dataset.step];
+    if(p.go){location.hash='#'+p.go;return;}
+    S.last={scr:p.scr[0],tab:0}; save(); location.hash='#screens';
+  });
+}
+
+/* ================= inheritance ================= */
+const ORGS=[['M1','חברת האם','Item Master'],['N1','מפעל צפון','ארגון בת'],['S1','מפעל דרום','ארגון בת'],['D1','מרכז הפצה','ארגון בת']];
+const ATTRS=[
+ {id:'desc',n:'Description'},
+ {id:'type',n:'User Item Type',vals:['Finished good','Subassembly','Purchased item']},
+ {id:'lot',n:'Lot Control',vals:['No control','Full control']},
+ {id:'mb',n:'Make or Buy',vals:['Make','Buy']},
+ {id:'planner',n:'Planner',vals:['DANA','YOSSI','MAYA'],fix:'O'},
+ {id:'min',n:'Min-Max Minimum Quantity'},
+ {id:'supply',n:'WIP Supply Type',vals:['Push','Assembly Pull','Operation Pull']}
+];
+function sim0(){return {org:'M1',log:'',
+  ctrl:{desc:'M',type:'M',lot:'O',mb:'O',planner:'O',min:'O',supply:'O'},
+  on:{M1:true,N1:true,S1:true,D1:false},
+  v:{M1:{desc:'Centrifugal pump 100mm',type:'Finished good',lot:'Full control',mb:'Make',planner:'DANA',min:'20',supply:'Push'},
+     N1:{desc:'Centrifugal pump 100mm',type:'Finished good',lot:'Full control',mb:'Make',planner:'YOSSI',min:'50',supply:'Assembly Pull'},
+     S1:{desc:'Centrifugal pump 100mm',type:'Finished good',lot:'No control',mb:'Make',planner:'MAYA',min:'30',supply:'Push'},
+     D1:null}};}
+let sim=sim0(), flash={};
+function mission(id){ if(!S.mis[id]){S.mis[id]=1; save(); toast('משימה הושלמה'); } }
+function vInherit(){
+  main.innerHTML=`<div class="view">
+   <section class="stack">
+    <h1>מבנה ארגוני והורשה</h1>
+    <p class="lead">בקבוצה עם חברת אם וחברות בנות, השאלה שחוזרת בכל שדה היא: האם הערך אחיד לכולם, או שכל חברה קובעת לעצמה? במערכת קוראים לזה ${en('Master Level')} ו-${en('Org Level')}.</p>
+   </section>
+   <section class="stack">
+    <h2>סימולטור ההורשה</h2>
+    <p class="lead">פריט לדוגמה, ${en('PUMP-100')}, בקבוצה לדוגמה. בחרו חברה כדי לפתוח את החלון שלה, שנו ערכים ורמות שליטה, וראו מה קורה בשאר החברות.</p>
+    <div id="sim" class="stack"></div>
+   </section>
+   <section class="stack">
+    <h2>מה עוד משותף בין החברות, ומה לא</h2>
+    <p class="lead">ההורשה אינה רק בפריטים. כך מתחלקים שאר הנתונים במודולים של מלאי ותפ"י.</p>
+    <div class="shared">${SHARED.map(r=>`<div><span class="b ${SHK[r[0]][1]}">${SHK[r[0]][0]}</span><p><b>${esc(r[1])}</b> ${r[3]?'<span class="b f">לאמת</span>':''}<br><span class="muted">${fmt(r[2])}</span></p></div>`).join('')}</div>
+   </section>
+   <section class="stack">
+    <h2>שכבות המבנה הארגוני</h2>
+    <p class="lead">מהרמה העליונה ועד המדף. העמודה השמאלית היא דוגמה לקבוצה דמיונית. המבנה אצלכם נקבע בתכנון היישום.</p>
+    <div class="levels">${LEVELS.map((l,i)=>`<div class="lvl" style="--i:${i}"><div class="lvl-h"><span><b>${esc(l[1])}</b> ${en(l[0])}</span><span class="small muted">${esc(l[3])}</span></div><p class="small muted">${esc(l[2])}</p></div>`).join('')}</div>
+   </section>
+  </div>`;
+  drawSim();
+}
+function drawSim(){
+  const box=$('#sim'); if(!box) return;
+  const o=sim.org, isM=o==='M1', on=sim.on[o];
+  const node=(r,cls)=>`<button class="node ${cls||''} ${sim.on[r[0]]?'':'off'}" aria-pressed="${o===r[0]}" data-org="${r[0]}"><b>${r[0]}</b><span>${esc(r[1])}</span><small>${sim.on[r[0]]?esc(r[2]):'הפריט לא משויך'}</small></button>`;
+  let rows='';
+  if(on){
+    rows=ATTRS.map(a=>{
+      const c=sim.ctrl[a.id], val=sim.v[o][a.id], locked=!isM&&c==='M';
+      let ctl;
+      if(locked) ctl=`<button class="simctl lock" data-lock="${a.id}" id="sim-${a.id}">${esc(val)}</button>`;
+      else if(a.vals) ctl=`<select class="simctl" data-attr="${a.id}" id="sim-${a.id}">${a.vals.map(v=>`<option${v===val?' selected':''}>${esc(v)}</option>`).join('')}</select>`;
+      else ctl=`<input class="simctl" type="text" data-attr="${a.id}" id="sim-${a.id}" value="${esc(val)}">`;
+      const assigned=ORGS.filter(r=>sim.on[r[0]]);
+      const mval=sim.v.M1[a.id];
+      const chips=assigned.map(r=>{const v=sim.v[r[0]][a.id];return `<span class="vchip ${v!==mval?'diff':''} ${flash[a.id+r[0]]?'flash':''}">${r[0]}: ${esc(v)}</span>`;}).join('');
+      return `<div class="simrow">
+        <div class="simrow-h"><label for="sim-${a.id}">${esc(a.n)}</label>
+         <span class="seg" role="group" aria-label="רמת שליטה"><button class="sm-m" aria-pressed="${c==='M'}" data-ctrl="${a.id}" data-to="M">Master</button><button class="sm-o" aria-pressed="${c==='O'}" data-ctrl="${a.id}" data-to="O">Org</button></span></div>
+        ${ctl}<div class="vchips">${chips}</div></div>`;
+    }).join('');
+  } else {
+    rows=`<div class="simrow"><p>הפריט עדיין לא משויך ל-${en(o)}. עד שלא משייכים אותו, הוא לא קיים בארגון הזה ואי אפשר לבצע בו שום פעולה.</p><div><button class="btn" id="assign">שיוך הפריט ל-${esc(o)}</button></div></div>`;
+  }
+  box.innerHTML=`
+   <div class="card stack">
+    <h3>משימות</h3>
+    <ol class="mis">${MISSIONS.map(m=>`<li class="${S.mis[m[0]]?'done':''}"><span class="box">${S.mis[m[0]]?'✓':''}</span><div><p>${esc(m[1])}</p>${S.mis[m[0]]?'':`<details><summary>רמז</summary>${esc(m[2])}</details>`}</div></li>`).join('')}</ol>
+   </div>
+   <div class="tree" role="group" aria-label="בחירת חברה">
+    ${node(ORGS[0],'m')}<div class="stem"></div>
+    <div class="tree-kids">${ORGS.slice(1).map(r=>node(r)).join('')}</div>
+   </div>
+   <div class="fw">
+    <div class="fw-title"><span>${isM?'Master Item':'Organization Item'} (${o}) - PUMP-100</span><i></i></div>
+    <div class="fw-body" style="direction:rtl">${rows}</div>
+    <div class="fw-status"><span>Record: 1/1</span><span>${isM?'Master Items':'Organization Items'}</span></div>
+   </div>
+   <div class="log" role="status" aria-live="polite">${sim.log||'בחרו חברה בעץ למעלה. הכפתורים Master ו-Org ליד כל שדה מדמים את המסך '+en('Item Attribute Controls')+'. מתחת לכל שדה מופיע הערך שלו בכל חברה.'}</div>
+   <div><button class="btn ghost sm" id="sim-reset">איפוס הסימולטור</button></div>`;
+  flash={};
+  $$('[data-org]',box).forEach(b=>b.onclick=()=>{sim.org=b.dataset.org; sim.log=''; drawSim();});
+  $$('[data-attr]',box).forEach(el=>el.onchange=()=>setVal(el.dataset.attr,el.value.trim()||sim.v[sim.org][el.dataset.attr]));
+  $$('[data-lock]',box).forEach(b=>b.onclick=()=>{
+    const a=ATTRS.find(x=>x.id===b.dataset.lock);
+    sim.log=`${en(a.n)} נשלט ברמת Master. בארגון בת הוא מוצג לקריאה בלבד: מעדכנים אותו רק במסך ${en('Master Items')}, בחברת האם, והערך חל על כל החברות.`;
+    if(a.id==='type') mission('m2');
+    drawSim();
+  });
+  $$('[data-ctrl]',box).forEach(b=>b.onclick=()=>setCtrl(b.dataset.ctrl,b.dataset.to));
+  const as=$('#assign',box); if(as) as.onclick=()=>{
+    sim.v[sim.org]=Object.assign({},sim.v.M1); sim.on[sim.org]=true;
+    ATTRS.forEach(a=>flash[a.id+sim.org]=1);
+    sim.log=`הפריט שויך ל-${en(sim.org)}. הערכים הועתקו מחברת האם כנקודת התחלה: מאפיינים ברמת Master יישארו זהים תמיד, ואת המאפיינים ברמת Org אפשר לשנות מעכשיו בנפרד.`;
+    if(sim.org==='D1') mission('m5');
+    drawSim();
+  };
+  $('#sim-reset',box).onclick=()=>{sim=sim0(); drawSim();};
+}
+function setVal(id,val){
+  const a=ATTRS.find(x=>x.id===id), o=sim.org;
+  if(sim.v[o][id]===val){drawSim();return;}
+  sim.v[o][id]=val;
+  if(sim.ctrl[id]==='M'){
+    const others=ORGS.filter(r=>sim.on[r[0]]&&r[0]!=='M1').map(r=>r[0]);
+    others.forEach(k=>{sim.v[k][id]=val;});
+    ORGS.forEach(r=>{if(sim.on[r[0]]) flash[id+r[0]]=1;});
+    sim.log=`עדכנתם את ${en(a.n)} בחברת האם. המאפיין נשלט ברמת Master, ולכן הערך החדש חל מיד גם על ${others.join(', ')}.`;
+    if(id==='desc') mission('m1');
+  } else {
+    flash[id+o]=1;
+    sim.log=`עדכנתם את ${en(a.n)} ב-${en(o)} בלבד. המאפיין נשלט ברמת Org, ולכן שאר החברות לא השתנו.`;
+    if(sim.v.S1.mb==='Buy'&&sim.v.M1.mb==='Make'&&sim.v.N1.mb==='Make') mission('m3');
+  }
+  drawSim();
+}
+function setCtrl(id,to){
+  if(sim.ctrl[id]===to) return;
+  const a=ATTRS.find(x=>x.id===id);
+  if(a.fix&&to!==a.fix){
+    sim.log=`אי אפשר: ${en(a.n)} הוא אחד המאפיינים שהמערכת קובעת להם רמת שליטה אחת בלבד, במקרה הזה Org. מתכננים מוגדרים לכל ארגון בנפרד, ולכן כל חברה בוחרת מתכנן משלה.`;
+    if(id==='planner') mission('m6');
+    drawSim(); return;
+  }
+  sim.ctrl[id]=to;
+  if(to==='M'){
+    ORGS.forEach(r=>{if(sim.on[r[0]]&&r[0]!=='M1'){sim.v[r[0]][id]=sim.v.M1[id]; flash[id+r[0]]=1;}});
+    sim.log=`${en(a.n)} עבר לרמת Master. בסימולטור הערך של חברת האם הוחל על כל החברות. איך המערכת האמיתית מטפלת בערכים שונים בזמן שינוי כזה לא אומת מול התיעוד, ולכן נהוג לקבוע רמות שליטה בתחילת היישום, לפני שמקימים פריטים.`;
+    if(id==='lot') mission('m4');
+  } else {
+    sim.log=`${en(a.n)} עבר לרמת Org. הערכים לא השתנו, אבל מעכשיו כל חברה יכולה לעדכן אותו לעצמה במסך ${en('Organization Items')}.`;
+  }
+  drawSim();
+}
+
+/* ================= screens ================= */
+let openF=null;
+function vScreens(){
+  const groups=Object.keys(MODS).map(m=>`<optgroup label="${esc(MODS[m])}">${SCREENS.filter(s=>s.mod===m).map(s=>`<option value="${s.id}">${esc(s.name)} · ${esc(s.he)}</option>`).join('')}</optgroup>`).join('');
+  main.innerHTML=`<div class="view">
+   <section class="stack">
+    <h1>מסכים ושדות</h1>
+    <p class="lead">בחרו מסך, ולחצו על שדה כדי לראות מה הוא עושה, אילו ערכים יש ברשימה שלו, ומה כדאי למיישם לדעת.</p>
+    <div class="row">
+     <select id="scr-pick" aria-label="בחירת מסך">${groups}</select>
+     <input id="scr-q" type="search" placeholder="חיפוש שדה, באנגלית או בעברית" aria-label="חיפוש שדה">
+    </div>
+    <div id="scr-res" class="results"></div>
+   </section>
+   <section id="scr-form" class="stack"></section>
+   <section class="row small muted" aria-label="מקרא">
+    <span><span class="b m">M</span> מקובל ברמת Master</span>
+    <span><span class="b o">O</span> מקובל ברמת Org</span>
+    <span><span class="b m">M*</span> <span class="b o">O*</span> רמה שהמערכת קובעת, בלי בחירה</span>
+    <span><span class="b g">LOV</span> שדה עם רשימת ערכים</span>
+    <span><span class="b f">לאמת</span> פרט שלא אומת מול התיעוד הרשמי</span>
+   </section>
+  </div>`;
+  const pk=$('#scr-pick'); pk.value=S.last.scr;
+  if(!pk.value){S.last={scr:SCREENS[0].id,tab:0}; pk.value=S.last.scr;}
+  pk.onchange=()=>{S.last={scr:pk.value,tab:0}; openF=null; save(); drawForm();};
+  $('#scr-q').oninput=e=>drawResults(e.target.value.trim());
+  drawForm();
+}
+function drawResults(q){
+  const box=$('#scr-res'); if(!box) return;
+  if(q.length<2){box.innerHTML='';return;}
+  const lq=q.toLowerCase();
+  const hits=FIELDS.filter(x=>x.f.n.toLowerCase().indexOf(lq)>=0||x.f.he.indexOf(q)>=0).slice(0,12);
+  box.innerHTML=hits.length?hits.map(x=>`<button data-go="${x.id}"><span>${en(x.f.n)} · ${esc(x.f.he)}</span><span class="small muted">${en(x.scr.name+' / '+x.tab.name)}</span></button>`).join(''):'<p class="muted small">לא נמצא שדה כזה באפליקציה.</p>';
+  $$('[data-go]',box).forEach(b=>b.onclick=()=>{
+    const x=BYID[b.dataset.go]; S.last={scr:x.scr.id,tab:x.ti}; openF=x.id; S.seen[x.id]=1; save();
+    $('#scr-pick').value=x.scr.id; $('#scr-q').value=''; box.innerHTML=''; drawForm();
+    const el=$('[data-f="'+x.id+'"]'); if(el) el.scrollIntoView({block:'center'});
+  });
+}
+function fieldDetail(f){
+  const lv=f.lvl==='M'?`<p class="small"><span class="b m">M${f.fx?'*':''}</span> ${f.fx?'המערכת קובעת: השדה נשלט ברמת Master בלבד, עם ערך אחיד בכל הקבוצה.':'מקובל לשלוט בשדה ברמת Master: ערך אחיד בכל הקבוצה.'}</p>`:f.lvl==='O'?`<p class="small"><span class="b o">O${f.fx?'*':''}</span> ${f.fx?'המערכת קובעת: השדה נשלט ברמת Org בלבד, וכל חברה קובעת אותו לעצמה.':'מקובל לשלוט בשדה ברמת Org: כל חברה קובעת לעצמה.'}</p>`:'';
+  return `<div class="fd" dir="rtl">
+    <div class="fd-h"><h3>${esc(f.he)}</h3>${f.lov?'<span class="b g">LOV</span>':''}${f.req?'<span class="b f">שדה חובה</span>':''}</div>
+    <p>${fmt(f.d)}</p>
+    ${f.lov?`<dl class="lovl">${f.lov.map(v=>`<div><dt>${esc(v[0])}</dt><dd>${fmt(v[1])}</dd></div>`).join('')}</dl>`:''}
+    ${lv}
+    ${f.tip?`<p class="tip"><b>למיישם:</b> ${fmt(f.tip)}</p>`:''}
+    ${f.ver?`<p class="small muted"><b>הבדל בין גרסאות:</b> ${fmt(f.ver)}</p>`:''}
+    ${f.v?`<p class="vnote"><b>לאמת:</b> ${f.vn?fmt(f.vn):'הפרט הזה לא אומת מול התיעוד הרשמי של Oracle. בדקו אותו במערכת שלכם.'}</p>`:''}
+  </div>`;
+}
+function drawForm(){
+  const box=$('#scr-form'); if(!box) return;
+  const scr=SCREENS.find(s=>s.id===S.last.scr)||SCREENS[0];
+  const ti=Math.min(S.last.tab||0,scr.tabs.length-1), tab=scr.tabs[ti];
+  const cur=openF&&BYID[openF]&&BYID[openF].scr===scr&&BYID[openF].ti===ti?BYID[openF].f:null;
+  const rows=tab.fields.map(f=>{
+    let ctl;
+    if(f.t==='c') ctl=`<span class="fc c"><span class="chk">${f.ex?'✓':''}</span></span>`;
+    else ctl=`<span class="fc ${f.req?'req':''}"><span>${esc(f.ex==null?(f.lov?f.lov[0][0]:''):f.ex)}</span>${f.lov?'<span class="dots">…</span>':''}</span>`;
+    const badges=(f.lvl?`<span class="b ${f.lvl==='M'?'m':'o'}">${f.lvl}${f.fx?'*':''}</span> `:'')+(f.v?'<span class="b f">לאמת</span> ':'');
+    return `<button class="fr" data-f="${f.id}" aria-expanded="${cur===f}"><span class="fl ${S.seen[f.id]?'seen':''}">${badges}${esc(f.n)}</span>${ctl}</button>${cur===f?fieldDetail(f):''}`;
+  }).join('');
+  box.innerHTML=`
+   <div class="stack"><h2>${esc(scr.he)} <span class="en muted" dir="ltr">${esc(scr.name)}</span></h2>
+    <p class="lead">${fmt(scr.intro)}</p>
+    <p class="pathline">${esc(scr.path)}</p>
+    <p class="small muted">${esc(scr.pnote||'נתיב התפריט תלוי בתחום האחריות (Responsibility) שהוגדר לכם.')}</p></div>
+   <div class="fw">
+    <div class="fw-title"><span>${esc(scr.name)}${scr.id==='item'?' (M1)':scr.id==='attrcontrols'||scr.id==='shipnet'?'':' (N1)'}</span><i></i></div>
+    <div class="fw-tabs" role="tablist">${scr.tabs.map((t,i)=>`<button role="tab" aria-selected="${i===ti}" data-tab="${i}">${esc(t.name)}</button>`).join('')}</div>
+    <div class="fw-body">${rows}</div>
+    <div class="fw-status"><span>Record: 1/1</span><span>${cur&&cur.lov?'List of Values':''}</span><span>&lt;OSC&gt;</span></div>
+   </div>`;
+  $$('[data-tab]',box).forEach(b=>b.onclick=()=>{S.last.tab=+b.dataset.tab; openF=null; save(); drawForm();});
+  $$('[data-f]',box).forEach(b=>b.onclick=()=>{
+    const id=b.dataset.f; openF=openF===id?null:id; S.seen[id]=1; save(); drawForm();
+  });
+}
+
+/* ================= practice ================= */
+let prac='match';
+function vPractice(){
+  main.innerHTML=`<div class="view">
+   <section class="stack"><h1>תרגול</h1>
+    <div class="subtabs" role="group" aria-label="סוג תרגול">
+     <button data-p="match" aria-pressed="${prac==='match'}">התאמת LOV</button>
+     <button data-p="cards" aria-pressed="${prac==='cards'}">כרטיסיות</button>
+     <button data-p="quiz" aria-pressed="${prac==='quiz'}">חידון</button>
+    </div></section>
+   <section id="prac" class="stack"></section></div>`;
+  $$('[data-p]',main).forEach(b=>b.onclick=()=>{prac=b.dataset.p; vPractice();});
+  if(prac==='match') startMatch(); else if(prac==='cards') drawCards(); else drawQuizStart();
+}
+/* --- LOV matching --- */
+let M=null;
+function startMatch(id){
+  const pool=LOVSETS.filter(x=>!S.lov[x.id]);
+  const x=id?BYID[id]:pick(pool.length?pool:LOVSETS);
+  M={x:x,vals:shuffle(x.f.lov),hes:shuffle(x.f.lov),sel:null,ok:{},miss:0,bad:null};
+  drawMatch();
+}
+function drawMatch(){
+  const box=$('#prac'); if(!box||!M) return;
+  const f=M.x.f, n=Object.keys(M.ok).length, fin=n===f.lov.length;
+  box.innerHTML=`
+   <p class="lead">התאימו כל ערך ברשימה למשמעות שלו. לחצו על ערך, ואז על ההסבר המתאים.</p>
+   <div class="row"><select id="m-pick" aria-label="בחירת רשימת ערכים">${LOVSETS.map(x=>`<option value="${x.id}"${x===M.x?' selected':''}>${S.lov[x.id]?'✓ ':''}${esc(x.f.n)} · ${esc(x.scr.name)}</option>`).join('')}</select>
+    <span class="small muted">${LOVSETS.filter(x=>S.lov[x.id]).length}/${LOVSETS.length} רשימות הושלמו</span></div>
+   <h2>${en(f.n)} <span class="muted small">${esc(f.he)}</span></h2>
+   <div class="match">
+    <div>${M.vals.map(v=>`<button class="mi v ${M.ok[v[0]]?'ok':''}" data-v="${esc(v[0])}" aria-pressed="${M.sel===v[0]}" ${M.ok[v[0]]?'disabled':''}>${esc(v[0])}</button>`).join('')}</div>
+    <div>${M.hes.map(v=>`<button class="mi h ${M.ok[v[0]]?'ok':''} ${M.bad===v[0]?'no':''}" data-h="${esc(v[0])}" ${M.ok[v[0]]?'disabled':''}>${fmt(v[1])}</button>`).join('')}</div>
+   </div>
+   <div class="row" role="status" aria-live="polite">${fin?`<b>${M.miss?'הושלם, עם '+M.miss+' טעויות.':'הושלם בלי טעויות.'}</b> <button class="btn" id="m-next">הרשימה הבאה</button>`:`<span class="muted small">${n}/${f.lov.length} התאמות</span>`}</div>`;
+  M.bad=null;
+  $('#m-pick').onchange=e=>startMatch(e.target.value);
+  $$('[data-v]',box).forEach(b=>b.onclick=()=>{M.sel=b.dataset.v; drawMatch();});
+  $$('[data-h]',box).forEach(b=>b.onclick=()=>{
+    if(!M.sel){toast('בחרו קודם ערך מהעמודה השמאלית');return;}
+    if(b.dataset.h===M.sel){M.ok[M.sel]=1; M.sel=null;
+      if(Object.keys(M.ok).length===M.x.f.lov.length){S.lov[M.x.id]=1; S.seen[M.x.id]=1; save();}
+    } else {M.miss++; M.bad=b.dataset.h;}
+    drawMatch();
+  });
+  const nx=$('#m-next'); if(nx) nx.onclick=()=>startMatch();
+}
+/* --- flashcards --- */
+let C={mod:'all',id:null,flip:false};
+function cardPool(){return FIELDS.filter(x=>C.mod==='all'||x.scr.mod===C.mod);}
+function nextCard(){
+  const pool=cardPool(); const min=Math.min.apply(null,pool.map(x=>S.box[x.id]||0));
+  let cand=pool.filter(x=>(S.box[x.id]||0)===min&&x.id!==C.id); if(!cand.length) cand=pool;
+  C.id=pick(cand).id; C.flip=false;
+}
+function drawCards(){
+  const box=$('#prac'); if(!box) return;
+  if(!C.id||!BYID[C.id]||(C.mod!=='all'&&BYID[C.id].scr.mod!==C.mod)) nextCard();
+  const x=BYID[C.id], f=x.f, pool=cardPool();
+  const cnt=[0,1,2,3].map(b=>pool.filter(p=>(S.box[p.id]||0)===b).length);
+  box.innerHTML=`
+   <p class="lead">נסו להיזכר מה השדה עושה, ואז הפכו את הכרטיסייה. כרטיסייה שידעתם שלוש פעמים נחשבת נשלטת.</p>
+   <div class="row"><select id="c-mod" aria-label="נושא">${Object.keys(TOPICS).map(k=>`<option value="${k}"${k===C.mod?' selected':''}>${esc(TOPICS[k])}</option>`).join('')}</select>
+    <span class="boxes"><span>חדשות ${cnt[0]}</span><span>בלמידה ${cnt[1]+cnt[2]}</span><span>נשלטות ${cnt[3]}</span></span></div>
+   <div class="fcard">
+    ${C.flip?`<div class="back"><p class="big" style="text-align:center">${esc(f.n)}</p><h3>${esc(f.he)}</h3><p>${fmt(f.d)}</p>${f.lov?`<dl class="lovl">${f.lov.map(v=>`<div><dt>${esc(v[0])}</dt><dd>${fmt(v[1])}</dd></div>`).join('')}</dl>`:''}${f.tip?`<p class="tip"><b>למיישם:</b> ${fmt(f.tip)}</p>`:''}</div>`
+     :`<p class="small muted">${en(x.scr.name+' / '+x.tab.name)}</p><p class="big">${esc(f.n)}</p><p class="muted">מה השדה הזה עושה${f.lov?', ואילו ערכים יש בו':''}?</p>`}
+   </div>
+   <div class="row">${C.flip?`<button class="btn ghost" data-g="0">לא ידעתי</button><button class="btn" data-g="1">ידעתי</button>`:`<button class="btn" id="c-flip">הפיכה</button><button class="btn ghost" id="c-skip">דילוג</button>`}</div>`;
+  $('#c-mod').onchange=e=>{C.mod=e.target.value; C.id=null; drawCards();};
+  const fl=$('#c-flip'); if(fl) fl.onclick=()=>{C.flip=true; S.seen[C.id]=1; save(); drawCards();};
+  const sk=$('#c-skip'); if(sk) sk.onclick=()=>{nextCard(); drawCards();};
+  $$('[data-g]',box).forEach(b=>b.onclick=()=>{
+    const cur=S.box[C.id]||0; S.box[C.id]=b.dataset.g==='1'?Math.min(3,cur+1):Math.max(1,cur-1); save(); nextCard(); drawCards();
+  });
+}
+/* --- quiz --- */
+let Q=null, qTopic='all';
+function autoLov(pool){
+  const x=pick(pool), lov=x.f.lov, right=pick(lov);
+  let opts=shuffle(lov).slice(0,4); if(opts.indexOf(right)<0){opts[0]=right; opts=shuffle(opts);}
+  return {h:`במסך ${en(x.scr.name)}, בשדה ${en(x.f.n)}: איזה ערך מתאים לתיאור הזה?<q>${fmt(right[1])}</q>`,o:opts.map(v=>en(v[0])),a:opts.indexOf(right),eh:`${en(right[0])}: ${fmt(right[1])}`};
+}
+function autoTab(){
+  const item=SCREENS.find(s=>s.id==='item'), fs=FIELDS.filter(x=>x.scr===item), x=pick(fs);
+  let opts=shuffle(item.tabs.filter(t=>t!==x.tab)).slice(0,3).concat([x.tab]); opts=shuffle(opts);
+  return {h:`באיזו לשונית של ${en('Master Item')} נמצא השדה ${en(x.f.n)}?`,o:opts.map(t=>en(t.name)),a:opts.indexOf(x.tab),eh:`${en(x.f.n)} נמצא בלשונית ${en(x.tab.name)}. ${fmt(x.f.d)}`};
+}
+function buildQuiz(topic){
+  const hand=shuffle(QUIZ.filter(q=>topic==='all'||q.t===topic)).slice(0,6).map(q=>{
+    const idx=shuffle(q.o.map((_,i)=>i));
+    return {h:fmt(q.q),o:idx.map(i=>fmt(q.o[i])),a:idx.indexOf(q.a),eh:fmt(q.e)};
+  });
+  const pool=FIELDS.filter(x=>x.f.lov&&x.f.lov.length>=2&&(topic==='all'||x.scr.mod===topic));
+  const out=hand.slice(); const used={};
+  let guard=0;
+  while(out.length<10&&guard++<60){
+    const q=(topic==='all'||topic==='inv')&&Math.random()<0.25?autoTab():(pool.length?autoLov(pool):null);
+    if(!q) break; if(used[q.h]) continue; used[q.h]=1; out.push(q);
+  }
+  return shuffle(out);
+}
+function drawQuizStart(){
+  const box=$('#prac'); if(!box) return;
+  box.innerHTML=`
+   <p class="lead">עשר שאלות: החלטות של מיישם, משמעות של ערכי LOV, ומיקום של שדות. אחרי כל תשובה מופיע הסבר.</p>
+   <div class="row"><select id="q-topic" aria-label="נושא החידון">${Object.keys(TOPICS).map(k=>`<option value="${k}"${k===qTopic?' selected':''}>${esc(TOPICS[k])}</option>`).join('')}</select>
+    <button class="btn" id="q-go">התחלת חידון</button></div>
+   <p class="small muted">${S.quiz.n?`עד עכשיו עניתם על ${S.quiz.n} שאלות, ${Math.round(S.quiz.c/S.quiz.n*100)}% מהן נכון.`:'עוד לא עניתם על שאלות.'}</p>`;
+  $('#q-topic').onchange=e=>{qTopic=e.target.value;};
+  $('#q-go').onclick=()=>{Q={qs:buildQuiz(qTopic),i:0,c:0,ans:null,wrong:[]}; drawQuiz();};
+}
+function drawQuiz(){
+  const box=$('#prac'); if(!box||!Q) return;
+  if(Q.i>=Q.qs.length){
+    box.innerHTML=`<h2>${Q.c} מתוך ${Q.qs.length}</h2>
+     <p class="lead">${Q.wrong.length?'אלה השאלות שכדאי לחזור עליהן:':'כל התשובות נכונות.'}</p>
+     ${Q.wrong.map(q=>`<div class="q-exp no"><p>${q.h}</p><p class="small"><b>התשובה:</b> ${q.o[q.a]}. ${q.eh}</p></div>`).join('')}
+     <div class="row"><button class="btn" id="q-again">חידון נוסף</button></div>`;
+    $('#q-again').onclick=drawQuizStart; return;
+  }
+  const q=Q.qs[Q.i], answered=Q.ans!=null;
+  box.innerHTML=`
+   <p class="small muted">שאלה ${Q.i+1} מתוך ${Q.qs.length}</p>
+   <p class="q-text">${q.h}</p>
+   <div class="q-opts">${q.o.map((o,i)=>`<button data-o="${i}" ${answered?'disabled':''} class="${answered&&i===q.a?'ok':''} ${answered&&i===Q.ans&&i!==q.a?'no':''}">${o}</button>`).join('')}</div>
+   <div role="status" aria-live="polite">${answered?`<div class="q-exp ${Q.ans===q.a?'ok':'no'}"><b>${Q.ans===q.a?'נכון.':'לא נכון.'}</b> ${q.eh}</div>`:''}</div>
+   ${answered?`<div><button class="btn" id="q-next">${Q.i+1<Q.qs.length?'השאלה הבאה':'סיכום'}</button></div>`:''}`;
+  $$('[data-o]',box).forEach(b=>b.onclick=()=>{
+    Q.ans=+b.dataset.o; S.quiz.n++; if(Q.ans===q.a){Q.c++; S.quiz.c++;} else Q.wrong.push(q); save(); drawQuiz();
+  });
+  const nx=$('#q-next'); if(nx){nx.onclick=()=>{Q.i++; Q.ans=null; drawQuiz();}; nx.focus();}
+}
+
+/* ================= glossary ================= */
+function vGlossary(){
+  main.innerHTML=`<div class="view">
+   <section class="stack"><h1>מילון מונחים</h1>
+    <p class="lead">המונחים שתשמעו בכל ישיבת יישום, באנגלית כפי שהם מופיעים במערכת, ובעברית.</p>
+    <input id="g-q" type="search" placeholder="חיפוש מונח" aria-label="חיפוש מונח"></section>
+   <dl class="gl" id="g-list"></dl></div>`;
+  const draw=q=>{
+    const lq=q.toLowerCase();
+    const rows=GLOSS.filter(g=>!q||g[0].toLowerCase().indexOf(lq)>=0||g[1].indexOf(q)>=0||g[2].indexOf(q)>=0);
+    $('#g-list').innerHTML=rows.length?rows.map(g=>`<div><dt>${esc(g[0])}</dt><dd><b>${esc(g[1])}</b><br><span class="muted">${esc(g[2])}</span></dd></div>`).join(''):'<p class="muted">לא נמצא מונח כזה.</p>';
+  };
+  $('#g-q').oninput=e=>draw(e.target.value.trim()); draw('');
+}
+
+/* ================= about ================= */
+function vAbout(){
+  const flagged=FIELDS.filter(x=>x.f.v).length;
+  main.innerHTML=`<div class="view">
+   <section class="prose"><h1>דיוק ומקורות</h1>
+    <p>האפליקציה נבנתה ללימוד עצמי של ${en('Oracle E-Business Suite R12')}, הגרסה שעובדת עם מסכי Forms. היא אינה מוצר רשמי של Oracle, והיא אינה מחליפה את התיעוד הרשמי או את המערכת שלכם.</p></section>
+   <section class="prose"><h2>על מה התוכן מבוסס</h2>
+    <p>ערכי רשימות הערכים (LOV), כללי ההורשה והכללים של עצי מוצר, מסלולים, פקודות עבודה ותכנון נבדקו בנובמבר 2026 מול מדריכי המשתמש הרשמיים של גרסה 12.2 באתר התיעוד של Oracle. התוכן לא נבדק מול המערכת שלכם.</p>
+    <ul>
+     <li>${en("Oracle Inventory User's Guide")} (${en('E48820')})</li>
+     <li>${en("Oracle Bills of Material User's Guide")} (${en('E48954')})</li>
+     <li>${en("Oracle Work in Process User's Guide")} (${en('E48905')})</li>
+     <li>${en("Oracle MRP User's Guide")} (${en('E48795')})</li>
+    </ul>
+    <p>ספריית התיעוד של גרסה 12.2: <a href="https://docs.oracle.com/cd/E26401_01/index.htm" target="_blank" rel="noopener">docs.oracle.com/cd/E26401_01</a></p>
+    <p>${flagged} מתוך ${FIELDS.length} השדות מסומנים <span class="b f">לאמת</span>, ובכל אחד מהם כתוב מה בדיוק לא אומת. שמות השדות עצמם, הערכים שמוצגים בהם כדוגמה, ההסברים בעברית והטיפים למיישם נכתבו מהיכרות כללית עם המערכת, ולא כולם נבדקו מילה במילה מול המדריך.</p>
+    <p>במקומות שבהם המדריך של 12.1 שונה מזה של 12.2 מופיעה הערה על הבדל בין גרסאות.</p></section>
+   <section class="prose"><h2>מה לבדוק אצלכם בכל מקרה</h2>
+    <ul>
+     <li>הגרסה המדויקת של המערכת. שמות שדות וערכים משתנים מעט בין גרסאות.</li>
+     <li>התאמות שנעשו אצלכם: שדות שהוסתרו, שדות שנוספו, ורשימות ערכים שהורחבו.</li>
+     <li>נתיבי התפריט. הם תלויים בתחום האחריות (Responsibility) שהוגדר לכם.</li>
+     <li>רמות השליטה בפועל, במסך ${en('Item Attribute Controls')}. הסימונים M ו-O כאן הם נוהג מקובל, לא ההגדרה שלכם.</li>
+     <li>שפת המסכים. אם המערכת אצלכם מתורגמת לעברית, שמות השדות יהיו שונים.</li>
+    </ul></section>
+   <section class="prose"><h2>ההתקדמות שלכם</h2>
+    <p>ההתקדמות נשמרת בדפדפן הזה בלבד. היא לא עוברת למכשיר אחר, ועלולה להימחק אם מנקים את נתוני הדפדפן.</p>
+    <div class="row" id="reset-box"><button class="btn ghost" id="reset">איפוס ההתקדמות</button></div></section>
+  </div>`;
+  $('#reset').onclick=()=>{
+    $('#reset-box').innerHTML='<span>לאפס את כל ההתקדמות?</span> <button class="btn" id="reset-y">כן, לאפס</button> <button class="btn ghost" id="reset-n">ביטול</button>';
+    $('#reset-y').onclick=()=>{S={seen:{},box:{},lov:{},mis:{},quiz:{n:0,c:0},last:{scr:'item',tab:0}}; save(); toast('ההתקדמות אופסה'); vAbout();};
+    $('#reset-n').onclick=vAbout;
+  };
+}
+
+/* ================= router ================= */
+const main=$('#main');
+const VIEWS={home:vHome,inherit:vInherit,screens:vScreens,practice:vPractice,glossary:vGlossary,about:vAbout};
+function route(){
+  const h=(location.hash||'').replace('#','');
+  const v=VIEWS[h]?h:'home';
+  $$('#nav a').forEach(a=>{ if(a.getAttribute('href')==='#'+v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+  VIEWS[v]();
+  window.scrollTo(0,0);
+  const cur=$('#nav a[aria-current]'); if(cur&&cur.scrollIntoView) cur.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+window.addEventListener('hashchange',route);
+drawProg(); route();
+})();
+</script>
+</body>
+</html>
